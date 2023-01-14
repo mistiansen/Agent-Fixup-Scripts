@@ -1,0 +1,332 @@
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{}}&libraries=places&callback=initAutocomplete" async defer></script>
+
+<script>
+var placeSearch, autocomplete;	
+
+var componentForm = {
+	street_number: 'short_name',
+	route: 'long_name',
+	locality: 'long_name',
+	administrative_area_level_1: 'short_name',
+	postal_code: 'short_name'
+};
+
+var id_mapping = {
+	locality: 'city',
+	administrative_area_level_1: 'state',
+	postal_code: 'zip' 
+}
+
+function initAutocomplete() {
+	var input = document.getElementById('street');
+	autocomplete = new google.maps.places.Autocomplete(input);
+	autocomplete.setComponentRestrictions({'country': ['us']});
+    autocomplete.addListener('place_changed', fillInAddress);
+}
+
+
+function fillInAddress() {
+  // Get the place details from the autocomplete object.
+  var place = autocomplete.getPlace();
+
+  for (var component in componentForm) {
+  	if (component in id_mapping) {
+  		document.getElementById(id_mapping[component]).value = '';
+  		document.getElementById(id_mapping[component]).disabled = false;
+  	}
+  }
+
+  // Get each component of the address from the place details
+  // and fill the corresponding field on the form.
+  var fullAddress = [];
+  for (var i = 0; i < place.address_components.length; i++) {
+  	var addressType = place.address_components[i].types[0];
+  	if (componentForm[addressType]) {
+  		var val = place.address_components[i][componentForm[addressType]];
+  		if (addressType == "street_number") {
+  			fullAddress[0] = val;
+  		} else if (addressType == "route") {
+  			fullAddress[1] = val;
+  		} else if (id_mapping[addressType] == "state") {
+  			select_state(val)
+  		} else if (addressType in id_mapping) {
+  			document.getElementById(id_mapping[addressType]).value = val; 
+  		}
+  	}
+  }
+  let address_id = 'street' 
+  let address = fullAddress.join(" ");
+  document.getElementById(address_id).value = address
+  if (document.getElementById(address_id).value !== "") {
+  	document.getElementById(address_id).disabled = false;
+  }
+}
+
+function select_state(state) {
+	var states = document.getElementById('state');
+	var options = states.options;
+  		for (var i = 0; i < options.length; i++) {
+        let value = options[i].value.trim()
+  			if (value == state.trim()) {
+  				states.selectedIndex = i;
+  				break;
+  			}
+  		}
+  	}
+
+</script>
+
+<!-- This script lets us use any component for our arrows. This way we can position freely -->
+<script>
+var Webflow = Webflow || [];
+Webflow.push(function() {
+ var l = $('#flowbaseSlider .w-slider-arrow-left');
+ var r = $('#flowbaseSlider .w-slider-arrow-right');
+ $('#flowbaseSlider')
+   .on('click', '.slider-left', function() {
+     l.trigger('tap');
+   })
+   .on('click', '.slider-right', function() {
+     r.trigger('tap');
+   });
+});
+</script>
+
+<script src="https://rawgit.com/samliew/dynamic-width/master/jquery.dynamicWidth.js"></script>
+<script>
+Webflow.push(function() {
+  $('#Form-Wrapper-2').find('input, textarea').dynamicWidth({ additionalPadding: 20 });
+  $('#Form-Wrapper-2').find('input').dynamicWidth({ additionalPadding: 3 });
+});
+</script>
+
+<script type="application/javascript ">
+    const ipFormInput = document.getElementById('ipFormInput');
+
+    fetch('https://api.ipify.org?format=json')
+        .then((response) => { return response.json() })
+        .then((json) => {
+            let ip = json.ip;
+            ipFormInput.value = ip;
+        })
+        .catch((err) => { console.log(`Error getting IP Address: ${err}`) })
+</script>
+
+<script>
+function getParam(name) { name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]"); var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search); return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " ")); }
+Webflow.push(function() {
+
+  // Auto-populate form fields (text fields only) based on query string
+  // For non-text fields like dropdown/radio/checkbox, please contact me for custom development (http://webflowexpert.com)
+  $('input:text, input[type=email]').each(function() {
+    var paramValue = getParam(this.id);
+    if(this.value == "" && paramValue != "") this.value = paramValue;
+  });
+
+});
+</script>
+
+<script>
+$('input.CurrencyInput').on('blur', function() {
+  const value = this.value.replace(/,/g, '');
+  this.value = parseFloat(value).toLocaleString('en-US', {
+    style: 'decimal',
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
+  });
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.1.2/js/ion.rangeSlider.min.js"></script>
+<script>
+$("#range-price").ionRangeSlider({
+    type: "double",
+    grid: false,
+    min: 50000,
+    max: 2000000,
+    from: 0,
+    to: 50000,
+    prefix: "$", //the range prefix. can only be a certain number of symbols//
+    hide_min_max: true,
+    decorate_both: true,
+    max_postfix: "+", //the postfix, for the second range indicator//
+    force_edges: true,
+    step: 1000,
+    prettify_enabled: true,
+    prettify_separator: ","
+
+});
+
+$("#range-year").ionRangeSlider({
+    type: "double", //signifies that there are two selectors//
+    grid: false,
+    min: 2010, //the min value//
+    max: 2019, //the max value//
+    from_min: 2010, //the range starting min value//
+    from: 2010, //the range starting min value//
+    to: 2019, //the range starting max value//
+    hide_min_max: true,
+    force_edges: true,
+    step: 1, //the numerical value of steps. for example, 2 would let the user select every 2 numbers//
+    prettify_enabled: true,
+    prettify_separator: ""
+});
+
+</script>
+
+<script>
+
+ $('input.format-number').keyup(function(event) {
+
+      // skip for arrow keys
+      if(event.which >= 37 && event.which <= 40) return;
+
+      // format number
+      $(this).val(function(index, value) {
+        return value
+          .replace(/\D/g, "")
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        ;
+      });
+    });
+</script>
+
+<script>
+
+ $('input.format-decimal').keyup(function(event) {
+
+      // skip for arrow keys
+      if(event.which >= 37 && event.which <= 40) return;
+
+      // format number
+      $(this).val(function(index, value) {
+        return value
+          .replace(/\D/g, "")
+          .replace(/\B(?=(\d{1})+(?!\d))/g, ".")
+        ;
+      });
+    });
+</script>
+
+<script>
+$('.fake-submit').click(function() {
+  $(this).closest('form').submit();
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.1.2/js/ion.rangeSlider.min.js"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{}}&libraries=places&callback=initAutocomplete" async defer></script>
+
+<script>
+var placeSearch, autocomplete;	
+
+var componentForm = {
+	street_number: 'short_name',
+	route: 'long_name',
+	locality: 'long_name',
+	administrative_area_level_1: 'long_name',
+	postal_code: 'short_name'
+};
+
+var id_mapping = {
+	locality: 'city',
+	administrative_area_level_1: 'state',
+	postal_code: 'zip' 
+}
+
+function initAutocomplete() {
+
+	initBuyAutocomplete();
+  initSellAutocomplete();
+  
+	var input = document.getElementById('search-sell');
+	autocomplete = new google.maps.places.Autocomplete(input);
+	autocomplete.setComponentRestrictions({'country': ['us']});
+    autocomplete.addListener('place_changed', fillInAddress);
+}
+
+function initBuyAutocomplete() {
+  var input = document.getElementById('search-buy');
+  var options = {
+  	types: ['(cities)'],
+  	componentRestrictions: {country: 'us'}
+	};
+  var autocomplete = new google.maps.places.Autocomplete(input, options);
+}
+
+function initSellAutocomplete() {
+  var input = document.getElementById('search-sell');
+  var options = {
+  	types: ['(street_number)'],
+  	componentRestrictions: {country: 'us'}
+	};
+  var autocomplete = new google.maps.places.Autocomplete(input, options);
+}
+
+function fillInAddress() {
+  // Get the place details from the autocomplete object.
+  var place = autocomplete.getPlace();
+
+  for (var component in componentForm) {
+  	if (component in id_mapping) {
+  		document.getElementById(id_mapping[component]).value = '';
+  		document.getElementById(id_mapping[component]).disabled = false;
+  	}
+  }
+
+  // Get each component of the address from the place details
+  // and fill the corresponding field on the form.
+  var fullAddress = [];
+  for (var i = 0; i < place.address_components.length; i++) {
+  	var addressType = place.address_components[i].types[0];
+  	if (componentForm[addressType]) {
+  		var val = place.address_components[i][componentForm[addressType]];
+  		if (addressType == "street_number") {
+  			fullAddress[0] = val;
+  		} else if (addressType == "route") {
+  			fullAddress[1] = val;
+  		} else if (id_mapping[addressType] == "state") {
+  			select_state(val)
+  		} else if (addressType in id_mapping) {
+  			document.getElementById(id_mapping[addressType]).value = val; 
+  		}
+  	}
+  }
+  let address_id = 'search-sell' 
+  let address = fullAddress.join(" ");
+  document.getElementById(address_id).value = address
+  if (document.getElementById(address_id).value !== "") {
+  	document.getElementById(address_id).disabled = false;
+  }
+}
+
+function select_state(state) {
+	var states = document.getElementById('state');
+	var options = states.options;
+  		for (var i = 0; i < options.length; i++) {
+        let value = options[i].value.trim()
+  			if (value == state.trim()) {
+  				states.selectedIndex = i;
+  				break;
+  			}
+  		}
+  	}
+
+</script>
+
+<script>
+
+ $('input.format-number').keyup(function(event) {
+
+      // skip for arrow keys
+      if(event.which >= 37 && event.which <= 40) return;
+
+      // format number
+      $(this).val(function(index, value) {
+        return value
+          .replace(/\D/g, "")
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        ;
+      });
+    });
+</script>

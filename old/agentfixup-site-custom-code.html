@@ -1,0 +1,157 @@
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NCKZTFM"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+    <script>
+        $(document).ready(function() {
+            $(document).on('keypress', function(e) {
+                if($('[name=projectname]').val() == '') {
+                    $('.blink-of-awesomeness').fadeOut();
+                    $('[name=projectname]').focus();
+                }
+            });
+            $('[name=projectname]').focus(function(e) {
+                $('.blink-of-awesomeness').fadeOut();
+            });
+            $('[name=projectname]').blur(function(e) {
+                $('.blink-of-awesomeness').fadeIn();
+            });
+        });
+    </script>
+    
+    <script src="https://cdn.rawgit.com/digitalBush/jquery.maskedinput/1.4.1/dist/jquery.maskedinput.min.js"></script><script type="text/javascript">
+    $(document).ready(function(){
+    $('.phone-mask').mask("(999)999-9999");
+    })
+    </script>
+    
+    <script>
+      $('#quicksearch').on('keyup keypress', function(e) {
+      var keyCode = e.keyCode || e.which;
+      if (keyCode === 13) { 
+        e.preventDefault();
+        return false;
+      }
+    });
+    </script>
+    
+    <script>
+    var placeSearch, autocomplete;	
+    
+    var componentForm = {
+        street_number: 'short_name',
+        route: 'long_name',
+        locality: 'long_name',
+        administrative_area_level_1: 'long_name',
+        postal_code: 'short_name'
+    };
+    
+    var id_mapping = {
+        locality: 'city',
+        administrative_area_level_1: 'state',
+        postal_code: 'zip' 
+    }
+    
+    function initAutocomplete() {
+    
+        initBuyAutocomplete();
+      initSellAutocomplete();
+      
+        var input = document.getElementById('search-sell');
+        autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.setComponentRestrictions({'country': ['us']});
+        autocomplete.addListener('place_changed', fillInAddress);
+    }
+    
+    function initBuyAutocomplete() {
+      var input = document.getElementById('search-buy');
+      var options = {
+          types: ['(cities)'],
+          componentRestrictions: {country: 'us'}
+        };
+      var autocomplete = new google.maps.places.Autocomplete(input, options);
+    }
+    
+    function initSellAutocomplete() {
+      var input = document.getElementById('search-sell');
+      var options = {
+          types: ['(street_number)'],
+          componentRestrictions: {country: 'us'}
+        };
+      var autocomplete = new google.maps.places.Autocomplete(input, options);
+    }
+    
+    function fillInAddress() {
+      // Get the place details from the autocomplete object.
+      var place = autocomplete.getPlace();
+    
+      for (var component in componentForm) {
+          if (component in id_mapping) {
+              document.getElementById(id_mapping[component]).value = '';
+              document.getElementById(id_mapping[component]).disabled = false;
+          }
+      }
+    
+      // Get each component of the address from the place details
+      // and fill the corresponding field on the form.
+      var fullAddress = [];
+      for (var i = 0; i < place.address_components.length; i++) {
+          var addressType = place.address_components[i].types[0];
+          if (componentForm[addressType]) {
+              var val = place.address_components[i][componentForm[addressType]];
+              if (addressType == "street_number") {
+                  fullAddress[0] = val;
+              } else if (addressType == "route") {
+                  fullAddress[1] = val;
+              } else if (id_mapping[addressType] == "state") {
+                  select_state(val)
+              } else if (addressType in id_mapping) {
+                  document.getElementById(id_mapping[addressType]).value = val; 
+              }
+          }
+      }
+      let address_id = 'search-sell' 
+      let address = fullAddress.join(" ");
+      document.getElementById(address_id).value = address
+      if (document.getElementById(address_id).value !== "") {
+          document.getElementById(address_id).disabled = false;
+      }
+    }
+    
+    function select_state(state) {
+        var states = document.getElementById('state');
+        var options = states.options;
+              for (var i = 0; i < options.length; i++) {
+            let value = options[i].value.trim()
+                  if (value == state.trim()) {
+                      states.selectedIndex = i;
+                      break;
+                  }
+              }
+          }
+    
+    </script>
+    
+    <script type="text/javascript">
+        adroll_adv_id = "EFE4GZIWZVH4TEC37VZZSP";
+        adroll_pix_id = "Y2H53VYEQRCDXOKWNBHILP";
+    
+        (function () {
+            var _onload = function(){
+                if (document.readyState && !/loaded|complete/.test(document.readyState)){setTimeout(_onload, 10);return}
+                if (!window.__adroll_loaded){__adroll_loaded=true;setTimeout(_onload, 50);return}
+                var scr = document.createElement("script");
+                var host = (("https:" == document.location.protocol) ? "https://s.adroll.com" : "http://a.adroll.com");
+                scr.setAttribute('async', 'true');
+                scr.type = "text/javascript";
+                scr.src = host + "/j/roundtrip.js";
+                ((document.getElementsByTagName('head') || [null])[0] ||
+                    document.getElementsByTagName('script')[0].parentNode).appendChild(scr);
+            };
+            if (window.addEventListener) {window.addEventListener('load', _onload, false);}
+            else {window.attachEvent('onload', _onload)}
+        }());
+    </script>
+    
+    

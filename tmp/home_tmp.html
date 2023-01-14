@@ -1,0 +1,105 @@
+<script>
+    let addressInputSell = 'address';
+    let placeSearchSell, autocompleteSell;
+
+    let addressInputSellBuy = 'address';
+    let placeSearchSellBuy, autocompleteSellBuy;    
+
+    // function initAutocomplete() {
+    function initAutocomplete(addressInput, autocomplete, placeSearch) {        
+      let input = document.getElementById(addressInput);
+      autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.setComponentRestrictions({ 'country': ['us'] }); // add 'ca' if want Canada
+      autocomplete.addListener('place_changed', fillInAddress(autocomplete, addressInput, placeSearch));
+      //   autocomplete.addListener('place_changed', fillInAddress);
+    }
+    // function fillInAddress() {
+    function fillInAddress(autocomplete, addressInput, placeSearch) {        
+      // Get the place details from the autocomplete object.
+      var place = autocomplete.getPlace();
+      if (typeof place.formatted_address != "undefined") {
+        console.log(place.formatted_address);
+        document.getElementById(addressInput).value = place.formatted_address;
+      }
+      for (var i = 0; i < place.address_components.length; i++) {
+          let component = place.address_components[i];
+          let componentType = place.address_components[i].types[0];
+              if (componentType == "locality") {
+                let city = component.short_name;
+                console.log('LOCALITY!!');            
+                console.log('Got this city: ' + city);
+                $('#city-storage').attr("value", city);
+              } else if (componentType == "administrative_area_level_1") {
+                let state = component.long_name;
+                console.log('Got this state: ' + state);
+                $('#state-storage').attr("value", state);
+              }
+        }       
+    }
+</script>  
+
+<script>
+    function submitAddress(submitAddressBtnSelector, addressInputId) {
+        // e.preventDefault(); // prevent webflow defaults
+        // $('#submit-address-btn').val("Going...");
+        
+        // let address = document.getElementById("address").value.trim();
+        let address = document.getElementById(addressInputId).value.trim();
+        if (address) {
+            $(submitAddressBtnSelector).val("Going...");
+            console.log('Routing with address ' + address);
+        } else {
+            console.log('Nothing entered');
+            return;
+        }
+
+        let routeToUrl = determineDestination(address);
+        
+        console.log('Routing to URL ' + routeToUrl);
+        location.href = routeToUrl;        
+    }
+
+    function determineDestination(address) {
+        const urlParams = new URLSearchParams(window.location.search);
+        let dest = urlParams.get('to');
+        let city = urlParams.get('city');
+        console.log('Got dest: ' + dest);
+        console.log('Got city: ' + city);
+
+        let toPath = 'find/us';
+        if (dest) {
+            toPath = 'find/' + dest;
+        } else if (city) {
+            toPath = 'cities/' + city;
+        } else {
+            console.log('No city or dest explicitly specified, pulling from address');
+            city = $("#city-storage").val();
+            state = $("#state-storage").val();
+            console.log('City, state from storage ' + city + ' ' + state)
+            if (city && state) {
+                let cityFmt = city.toLowerCase().split(" ").join("-");
+                console.log(cityFmt);
+                let stateFmt = state.toLowerCase().split(" ").join("-");
+                console.log(stateFmt);
+                toPath = "cities/" + cityFmt + "-" + stateFmt;
+            }
+        }
+
+        let routeToPathBase = 'https://agentfixup.com/' + toPath;
+        let queryString = '?address=' + encodeURIComponent(address);
+        let routeToUrl = routeToPathBase + queryString;        
+        return routeToUrl;
+    }
+
+    $("body").on("click", "#submit-address-btn", async function (e) {
+        e.preventDefault(); // prevent webflow defaults
+        submitAddress("#submit-address-btn", "address");
+    });  
+
+    $("body").on("click", "#submit-address-buy-sell-btn", async function (e) {
+        e.preventDefault(); // prevent webflow defaults
+        submitAddress("#submit-address-buy-sell-btn", "address-sell-buy");
+    });  
+</script>
+
+ 

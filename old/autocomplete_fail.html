@@ -1,0 +1,95 @@
+<script type="text/javascript"
+    src="https://maps.googleapis.com/maps/api/js?key={{KEY}}&libraries=places&callback=initAutocomplete"
+    async="" defer="">
+    </script>
+
+<script>
+    let addressInput = 'address-correction-input';
+    var placeSearch, autocomplete;
+    function initAutocomplete() {
+        var input = document.getElementById(addressInput);
+        autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.setComponentRestrictions({ 'country': ['us'] }); // add 'ca' if want Canada
+        autocomplete.addListener('place_changed', fillInAddress);
+    }
+    function fillInAddress() {
+        // Get the place details from the autocomplete object.
+        var place = autocomplete.getPlace();
+        if (typeof place.formatted_address != "undefined") {
+            console.log(place.formatted_address);
+            document.getElementById(addressInput).value = place.formatted_address;
+        }
+    }
+
+</script>
+
+
+
+
+<script>
+    let addressInputSell = 'address';
+    let addressInputSellBuy = 'address-sell-buy';
+    var autocompleteSell, autocompleteSellBuy;
+    var placeSearch;
+
+    initAutocomplete(autocompleteSell, addressInputSell);
+    initAutocomplete(autocompleteSellBuy, addressInputSellBuy);
+
+    function initAutocomplete(autocomplete, addressInput) {
+        var input = document.getElementById(addressInput);
+        autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.setComponentRestrictions({ 'country': ['us'] }); // add 'ca' if want Canada
+        autocomplete.addListener('place_changed', fillInAddress(autocomplete, addressInput));
+    }
+    function fillInAddress(autocomplete, addressInput) {
+        // Get the place details from the autocomplete object.
+        var place = autocomplete.getPlace();
+        if (typeof place.formatted_address != "undefined") {
+            console.log(place.formatted_address);
+            document.getElementById(addressInput).value = place.formatted_address;
+        }
+    }
+
+</script>
+
+
+
+<script>
+    let addressInput = 'address';
+    var placeSearch, autocomplete;
+    function initAutocomplete() {
+      var input = document.getElementById(addressInput);
+      autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.setComponentRestrictions({ 'country': ['us'] }); // add 'ca' if want Canada
+      autocomplete.addListener('place_changed', fillInAddress);
+    }
+    function fillInAddress() {
+      // Get the place details from the autocomplete object.
+      var place = autocomplete.getPlace();
+      if (typeof place.formatted_address != "undefined") {
+        console.log(place.formatted_address);
+        document.getElementById(addressInput).value = place.formatted_address;
+      }
+    }
+  
+  </script>
+
+<script>
+    let addressInputSellBuy = 'address';
+    var placeSearch, autocomplete2;
+    function initAutocomplete2() {
+      var input = document.getElementById(addressInputSellBuy);
+      autocomplete2 = new google.maps.places.Autocomplete(input);
+      autocomplete2.setComponentRestrictions({ 'country': ['us'] }); // add 'ca' if want Canada
+      autocomplete2.addListener('place_changed', fillInAddress2);
+    }
+    function fillInAddress2() {
+      // Get the place details from the autocomplete object.
+      var place = autocomplete2.getPlace();
+      if (typeof place.formatted_address != "undefined") {
+        console.log(place.formatted_address);
+        document.getElementById(addressInputSellBuy).value = place.formatted_address;
+      }
+    }
+  
+  </script>

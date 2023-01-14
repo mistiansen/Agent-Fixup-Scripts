@@ -1,0 +1,39 @@
+<script>
+    $(document).ready(function(){
+          $('#submit-address-btn').attr("disabled", true);    
+      $(window).keydown(function(event){
+        if(event.keyCode == 13) {
+          event.preventDefault();
+          return false;
+        }
+      });    
+    });   
+  </script>
+  
+  <script type="text/javascript"
+          src="https://maps.googleapis.com/maps/api/js?key={{}}&libraries=places&callback=initAutocomplete"
+          async="" defer="">
+  </script>
+  
+  <script>
+    let addressInput = 'address';
+    var placeSearch, autocomplete;
+    function initAutocomplete() {
+      var input = document.getElementById(addressInput);
+      autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.setComponentRestrictions({ 'country': ['us', 'ca'] });
+      autocomplete.addListener('place_changed', fillInAddress);
+    }
+    function fillInAddress() {
+      // Get the place details from the autocomplete object.
+      var place = autocomplete.getPlace();   
+      if (typeof place.formatted_address != "undefined") {
+        console.log(place.formatted_address);
+        document.getElementById(addressInput).value = place.formatted_address;    
+        if (document.getElementById(addressInput).value !== "") {
+          document.getElementById(addressInput).disabled = false;
+          document.getElementById("submit-address-btn").disabled = false;
+        }        
+      }    
+    }
+  </script>

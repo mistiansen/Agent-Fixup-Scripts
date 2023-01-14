@@ -1,0 +1,175 @@
+<script type="text/javascript"
+    src="https://cdn.jsdelivr.net/gh/mistiansen/HVR-Scripts@master/cities.js"
+    async="" defer="">
+</script>
+
+<script>
+    function initAutocomplete() {
+        // initCityAutocomplete();      
+        initAddressAutocomplete();
+    }    
+
+    // function initCityAutocomplete() {
+    //     // var input = document.getElementById('search-buy');
+    //     // var options = {
+    //     //     types: ['(cities)'],
+    //     //     componentRestrictions: {country: 'us'}
+    //     // };
+    //     // var autocomplete = new google.maps.places.Autocomplete(input, options);
+    //     var inputs = document.getElementsByClassName('city-input');
+    
+    //     var options = {
+    //         // types: ['(cities)'],
+    //         componentRestrictions: {country: 'us'}
+    //     };        
+    
+    //     var autocompletes = [];
+    
+    //     for (var i = 0; i < inputs.length; i++) {
+    //         var autocomplete = new google.maps.places.Autocomplete(inputs[i], options);
+    //         autocomplete.inputId = inputs[i].id;
+    //         autocomplete.addListener('place_changed', fillInCity);
+    //         autocompletes.push(autocomplete);
+    //     }        
+    // }
+
+    function fillInCity() {
+      // Get the place details from the autocomplete object.
+      var place = this.getPlace();
+      if (typeof place.formatted_address != "undefined") {
+        console.log(this.inputId);
+        console.log(place.formatted_address);
+        document.getElementById(this.inputId).value = place.formatted_address;
+      }
+      for (var i = 0; i < place.address_components.length; i++) {
+          let component = place.address_components[i];
+          let componentType = place.address_components[i].types[0];
+              if (componentType == "locality") {
+                let city = component.short_name;
+                console.log('LOCALITY!!');            
+                console.log('Got this city: ' + city);
+                $('#city-storage').attr("value", city);
+              } else if (componentType == "administrative_area_level_1") {
+                let state = component.short_name;
+                console.log('Got this state: ' + state);
+                $('#state-storage').attr("value", state);
+              }
+        }       
+    }    
+
+    function initAddressAutocomplete() {
+        var inputs = document.getElementsByClassName('address-input');
+    
+        var options = {
+            componentRestrictions: {country: ['us']}
+        };
+    
+        var autocompletes = [];
+    
+        for (var i = 0; i < inputs.length; i++) {
+            var autocomplete = new google.maps.places.Autocomplete(inputs[i], options);
+            autocomplete.inputId = inputs[i].id;
+            autocomplete.addListener('place_changed', fillInAddress);
+            autocompletes.push(autocomplete);
+        }
+    }
+
+    function fillInAddress() {
+      // Get the place details from the autocomplete object.
+      var place = this.getPlace();
+      if (typeof place.formatted_address != "undefined") {
+        console.log(this.inputId);
+        console.log(place.formatted_address);
+        document.getElementById(this.inputId).value = place.formatted_address;
+      }
+      for (var i = 0; i < place.address_components.length; i++) {
+          let component = place.address_components[i];
+          let componentType = place.address_components[i].types[0];
+              if (componentType == "locality") {
+                let city = component.short_name;
+                console.log('LOCALITY!!');            
+                console.log('Got this city: ' + city);
+                $('#city-storage').attr("value", city);
+              } else if (componentType == "administrative_area_level_1") {
+                let state = component.short_name;
+                console.log('Got this state: ' + state);
+                $('#state-storage').attr("value", state);
+              }
+        }       
+    }
+</script>  
+
+<script>
+    function submitAddress(submitAddressBtnSelector, addressInputId, visitorType) {
+        // e.preventDefault(); // prevent webflow defaults
+        let address = document.getElementById(addressInputId).value.trim();
+        if (address) {
+            $(submitAddressBtnSelector).val("Going...");
+            console.log('Routing with address ' + address);
+        } else {
+            console.log('Nothing entered');
+            return;
+        }
+
+        let routeToUrl = determineDestination(address, visitorType);
+        
+        console.log('Routing to URL ' + routeToUrl);
+        location.href = routeToUrl;        
+    }
+
+    function determineDestination(address, visitorType) {
+        const urlParams = new URLSearchParams(window.location.search);
+        let dest = urlParams.get('to');
+        let city = urlParams.get('city');
+        console.log('Got dest: ' + dest);
+        console.log('Got city: ' + city);
+
+        let toPath = 'find/us';
+        if (dest) {
+            toPath = 'find/' + dest;
+        } else if (city) {
+            toPath = 'cities/' + city;
+        } else {
+            // THIS IS THE TYPICAL CASE
+            console.log('No city or dest explicitly specified, pulling from address');
+            city = $("#city-storage").val();
+            let state = $("#state-storage").val();
+            console.log('City, state from storage ' + city + ' ' + state);
+
+            let cityFmt = city.toLowerCase().split(" ").join("-");
+            console.log(cityFmt);
+            let stateFmt = state.toLowerCase().split(" ").join("-");
+            console.log(stateFmt);
+
+            let cityState = cityFmt + "-" + stateFmt;                
+            if (agentFixupCities.includes(cityState)) {
+                toPath = "cities/" + cityState;                  
+            } else {
+                console.log('Not one of our cities');
+                toPath = "general";                  
+            }
+        }
+
+        let routeToPathBase = 'https://agentfixup.com/' + toPath;
+        let queryString = '?address=' + encodeURIComponent(address) + '&visitor=' + encodeURIComponent(visitorType);
+        let routeToUrl = routeToPathBase + queryString;        
+        return routeToUrl;
+    }
+
+    $("body").on("click", "#submit-address-btn", async function (e) {
+        e.preventDefault(); // prevent webflow defaults
+        submitAddress("#submit-address-btn", "address", "seller");
+    });
+    
+    $("body").on("click", "#submit-address-buy-btn", async function (e) {
+        e.preventDefault(); // prevent webflow defaults
+        submitAddress("#submit-address-buy-btn", "address-buy", "buyer");
+    });    
+
+    $("body").on("click", "#submit-address-buy-sell-btn", async function (e) {
+        e.preventDefault(); // prevent webflow defaults
+        submitAddress("#submit-address-buy-sell-btn", "address-sell-buy", "seller-buyer");
+    });  
+</script>
+
+ 

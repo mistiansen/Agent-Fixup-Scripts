@@ -1,0 +1,43 @@
+<script type="text/javascript">
+    document.getElementById("submit-address-btn").onclick = function () {
+      console.log('Submitting address');
+      // Redirect to this URL with the value of the form fields appended to the end of the URL
+      let nextPagePath = '/property-info';
+      // let nextPagePath = '/property-info.html'; // might have to change to this after export
+      let queryString = _generateFormResponseURLSuffix();
+      let currentUrl = window.location.href;
+      let prefix = currentUrl.split(':')[0];
+      let nextPageUrl;
+      if (prefix === "https") {
+        nextPageUrl = _generateWebURL("https", currentUrl, nextPagePath, queryString)
+      } else if (prefix === "http") {
+        nextPageUrl = _generateWebURL("http", currentUrl, nextPagePath, queryString)
+      } else {
+        nextPageUrl = _generateLocalURL(currentUrl, nextPagePath, queryString);
+      }
+      console.log(nextPageUrl);
+      location.href = nextPageUrl;
+    };
+    function _generateWebURL(prefix, currentUrl, nextPagePath, queryString) {
+      /* NOTE that this function assumes we are going from some base URL to a specified path 
+            (e.g., homevalues.com to homevalues.com/values/details */
+      let urlBase = currentUrl.split(prefix + '://')[1];
+      let domain = urlBase.split('/')[0];
+      let nextPageURL = prefix + '://' + domain + nextPagePath + queryString; // may not need to add the prefix on web (may be automatic)
+      return nextPageURL;
+    }
+    function _generateLocalURL(currentUrl, nextPagePath, queryString) {
+      /* NOTE that this function assumes we are navigating from e.g., index.html to a folder in the same directory
+            (e.g., /my/computer/index.html to /my/computer/values/details.html */
+      let currentUrlTokens = currentUrl.split('/');
+      currentUrlTokens.pop(); // remove the current filename (e.g., index.html)
+      let currentUrlBase = currentUrlTokens.join('/'); // recreate the path without the filename
+      let nextPageURL = currentUrlBase + nextPagePath + queryString;
+      return nextPageURL;
+    }
+    function _generateFormResponseURLSuffix() {
+      // Get all form values and convert them to URL-safe key-value pairs
+      let string = '?address=' + encodeURIComponent(document.getElementById("address").value.trim())
+      return string;
+    }
+  </script>

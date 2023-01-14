@@ -1,0 +1,346 @@
+<script>
+
+    // tab IDs
+    // id="w-tabs-0-data-w-tab-0", id="w-tabs-0-data-w-tab-1", id="w-tabs-0-data-w-tab-2"
+
+    /* 
+    INDICATING BUYING VS. SELLING VS. BOTH
+    */
+    document.getElementById("w-tabs-0-data-w-tab-0").addEventListener('click', (event) => {
+        console.log('Clicked selling');
+    });    
+
+    document.getElementById("w-tabs-0-data-w-tab-1").addEventListener('click', (event) => {
+        console.log('Clicked buying');
+    });    
+
+    document.getElementById("w-tabs-0-data-w-tab-2").addEventListener('click', (event) => {
+        console.log('Clicked selling and buying');
+    });    
+
+    $("body").on("click", "#submit-address-correction-btn", async function (e) {
+        e.preventDefault(); // prevent webflow defaults
+        // $('#submit-address-correction-btn').val("Going...");
+    
+        $("#market-analysis-loader").show();
+    
+        let address = document.getElementById("address-correction-input").value.trim();
+        $(".address-display").html(address); // we want to show, but not necessarily store/send 
+    
+        // RE-VALIDATE ADDRESS
+        validateAddress(address);
+        setTimeout(function () { $("#market-analysis-loader").hide(); }, 2000);
+    });
+    
+    var formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0, // (2500.99 printed as $2,501)
+    });
+    
+    $(document).ready(function () {
+        let queryString = window.location.search;
+        let params = new URLSearchParams(queryString);
+        let destination = params.get("dest");
+        console.log('Here is the destination: ' + destination);
+    
+        console.log('Pulled destination from queryString: ' + destination);
+    
+        if (!destination) {
+            console.log('Assigned default destination');
+            destination = "6299a06cd8258300049a1a1a";
+        }
+    
+        // history.replaceState({}, null, "/value");  
+    
+        // IT'S possible that we should query with the source site name here to ensure safety
+        $("#destination-storage").attr("value", destination);
+        console.log(destination);
+    });
+
+    document.querySelectorAll('.submit-contact').forEach(item => {
+        item.addEventListener('click', event => {
+            $("#buyer-contact-form").hide();
+            $("#seller-contact-form").hide();
+            setTimeout(function () { console.log("Waiting...") }, 5000);
+            $(".value-div").show();
+        })
+    });    
+
+    document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
+        $("#buyer-contact-form").hide();
+        $("#seller-contact-form").hide();
+        setTimeout(function () { console.log("Waiting...") }, 5000);
+        $(".value-div").show();
+    });    
+    
+    document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
+        let zipCode = document.getElementById("zip-code-input").value.trim();
+        let address = $("#address-storage").val();
+        console.log('Adding to address from storage: ' + address);
+    
+        let zipCodeAddress = addZipCode(address, zipCode);
+    
+        // SHOW LOADER
+        $('#updating-home-details-loader').removeClass('hide');
+    
+        // VALIDATE ADDRESS
+        validateAddress(zipCodeAddress);
+        setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
+    });
+    
+    window.onbeforeunload = function () {
+        let finished = $("#finished").val();
+        console.log("finished? " + finished);
+        let warningMessage = null;
+        if (!finished) {
+            console.log('Setting warning');
+            warningMessage = 'Are you sure you want to leave?';
+        }
+        console.log(warningMessage);
+        return warningMessage;
+    };
+    
+    function mobileCheck() {
+        let isMobile = false;
+        if ((window.matchMedia("(max-width: 767px)").matches) && (!!('ontouchstart' in window))) {
+            isMobile = true;
+        }
+        return isMobile;
+    };
+    
+    function handleBounce() {
+        let backendPath = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod";
+        let finished = $("#finished").val(); // has a value if already bounced or reached report
+        if (!finished) { // if no value has been set
+            let sessionInfo = getCurrentSessionInfo();
+            sessionInfo["finished"] = false;
+            sessionInfo["bounced"] = true;
+            sessionInfo = JSON.stringify(sessionInfo);
+            navigator.sendBeacon(backendPath + "/session", sessionInfo);
+            $("#finished").attr("value", "no"); // technically "bounced", but just needs any value so we don't re-notify
+        }
+    }
+    
+    // window.onunload = function () {
+        // handleBounce();
+    // };
+    
+    document.onvisibilitychange = function () {
+        console.log('Visibility change');
+        let mobileDevice = mobileCheck();
+        console.log('Mobile: ' + mobileDevice);
+        if ((mobileDevice) && (document.visibilityState === 'hidden')) {
+            handleBounce();
+        }
+    };
+
+    
+    function getCurrentSessionInfo() {
+    
+        let checkRadioNames = ["Relationship-to-Home", "Considering-Selling"];
+        for (const checkRadioName of checkRadioNames) {
+            console.log('Checking radio selections for ' + checkRadioName);
+            let sellerDetails = checkSellerDetails(checkRadioName);
+            sessionInfo[checkRadioName] = sellerDetails;
+        }
+    
+        console.log('Sending this sessionInfo: ' + sessionInfo);
+    
+        return sessionInfo;
+    }
+
+    function getGeneralSessionInfo() {
+        let site = $("#domain-storage").val();
+        let agentId = $("#agent-id-storage").val();
+        let sessionId = $("#session-id-storage").val();
+        let visitorType = $("#visitor-type-storage").val();
+        console.log('Got sessionId from div before submit: ' + sessionId);
+        console.log('Got agentId from div before submit: ' + agentId);
+
+        let submittedName = getNameSubmission("#seller-name-input");
+        let submittedNumber = getPhoneSubmission("#seller-phone-initial", "#seller-phone-input");
+        let sessionInfo = {
+            "site": site,
+            "sessionId": sessionId,
+            "agentId": agentId,
+            "visitorType": visitorType,
+            "Submitted-Address": addressSend, // "Submitted Address": addressSend,
+            "Submitted-Name": submittedName,
+            "Submitted-Number": submittedNumber,
+            "validatedStreet": validatedStreet, // for the skiptrace if property info pull fails
+            "validatedUnit": validatedUnit,
+            "validatedUnitType": validatedUnitType,
+            "ValidatedCity": validatedCity,
+            "validatedState": validatedState,
+            "validatedZip": validatedZip, // for the skiptrace if property info pull fails                
+        }  
+        return sessionInfo;        
+    }
+
+
+    function getSellerSessionInfo() {
+        let site = $("#domain-storage").val();
+        let agentId = $("#agent-id-storage").val();
+        let sessionId = $("#session-id-storage").val();
+        console.log('Got sessionId from div before submit: ' + sessionId);
+        console.log('Got agentId from div before submit: ' + agentId);
+
+        // PULL validated address info to attempt the skiptrace in the backend
+        let validatedStreet = $("#street-storage").val();
+        let validatedUnit = $("#unit-storage").val();
+        let validatedUnitType = $("#unit-type-storage").val();
+        let validatedCity = $("#city-storage").val();
+        let validatedState = $("#state-storage").val();
+        let validatedZip = $("#zip-storage").val();
+        console.log('Got validated street from div before submit: ' + validatedStreet);
+        console.log('Got validated zip from div before submit: ' + validatedZip);
+
+        let addressSend = $("#address-storage").val();
+        
+        // let submittedName = $("#name-storage").val(); 
+        // let submittedNumber = $("#phone-storage").val(); 
+        let submittedName = getNameSubmission("#seller-name-input");
+        let submittedNumber = getPhoneSubmission("#seller-phone-initial", "#seller-phone-input");
+
+        let sessionInfo = {
+            "site": site,
+            "sessionId": sessionId,
+            "agentId": agentId,
+            "Submitted-Address": addressSend, // "Submitted Address": addressSend,
+            "Submitted-Name": submittedName,
+            "Submitted-Number": submittedNumber,
+            "validatedStreet": validatedStreet, // for the skiptrace if property info pull fails
+            "validatedUnit": validatedUnit,
+            "validatedUnitType": validatedUnitType,
+            "ValidatedCity": validatedCity,
+            "validatedState": validatedState,
+            "validatedZip": validatedZip, // for the skiptrace if property info pull fails                
+        }        
+
+        let checkRadioNames = ["Relationship-to-Home", "Considering-Selling"];
+        sessionInfo = getSpecifiedRadioSelections(checkRadioNames, sessionInfo);
+        console.log('Sending this sessionInfo: ' + sessionInfo);
+
+        return sessionInfo;
+    }   
+
+    function getNameSubmission(nameSelector) {
+        let submittedName;
+        try {
+            submittedName = $(nameSelector).val(); // 7/10/2022 - was "#First-Name"
+            if (!submittedName || submittedName.length <= 1) {
+                submittedName = '-';
+            }
+        } catch (error) {
+            console.log(error);
+            submittedName = '-';
+        }
+        return submittedName;
+    }    
+
+    function getPhoneSubmission(initialPhoneSelector, phoneSelector) {
+        let submittedNumber;
+        try {
+            submittedNumber = $(initialPhoneSelector).val();
+            console.log('Got submittedNumber from the initial element ' + submittedNumber);            
+            if (!submittedNumber || submittedNumber.length <= 3) {
+                submittedNumber = $(phoneSelector).val();
+                console.log('Got submittedNumber from the input element ' + submittedNumber);
+            }
+            if (!submittedNumber || submittedNumber.length <= 3) {
+                console.log('Did not get any submittedNumber');
+                submittedNumber = "-";
+            }            
+        } catch (error) {
+            console.log(error);
+            submittedNumber = '-';
+        }
+        return submittedNumber;
+    }        
+    
+    function getSingleRadioSelection(name) {
+        /* GET the selected value of a single radio element */
+        let checkedRadio = document.querySelector('input[name="' + name + '"]:checked');
+        let checkedValue;
+        if (checkedRadio != null) {
+            checkedValue = checkedRadio.value
+        } else {
+            checkedValue = "None given";
+        }
+        return checkedValue;
+    }    
+
+    function getSpecifiedRadioSelections(checkRadioNames, sessionInfo) {
+        /* GET the selected values of ALL SPECIFIED radio elements */        
+        // let checkRadioNames = ["Relationship-to-Home", "Considering-Selling"];
+        for (const checkRadioName of checkRadioNames) {
+            console.log('Checking radio selections for ' + checkRadioName);
+            let selection = getSingleRadioSelection(checkRadioName);
+            sessionInfo[checkRadioName] = selection;
+        }
+        return sessionInfo;
+    }    
+    
+
+    document.querySelectorAll('.finished-form').forEach(item => {
+        item.addEventListener('click', event => {
+            let visitorType = $("#visitor-type-storage").val();
+            console.log('Pulled visitor type from storage: ' + visitorType);
+
+            if ((visitorType == "seller" || visitorType == "seller-buyer")) {
+                console.log('got SELLER visitor type');
+                $("#seller-form").hide();
+                $("#seller-success-page").show();
+                $("#seller-name-popup").show();            
+            } else if (visitorType == "buyer") {
+                console.log('got BUYER visitor type');
+                $("#buyer-form").hide();
+                $("#buyer-success-page").show();        
+                $("#buyer-name-popup").show();            
+            } else {
+                // SHOW SOME CATCHALL? PROMPT FOR ADDRESS?
+                console.log("What is the visitorType??");
+                $("#buyer-form").hide();
+                $("#buyer-success-page").show();          
+                $("#buyer-name-popup").show();                      
+            }
+            $('#success-loader').css('display', 'flex'); // replacing typical "$("#success-loader").show();" ; alternative may be to always show it with 'flex' in webflow then just do the .hide() step below
+            setTimeout(function () { $("#success-loader").hide(); }, 3000);            
+        }
+    });
+
+
+        $("#visitor-info-page").hide();
+        let valueEstimate = $("#value-estimate-storage").val();
+        console.log("Got valueEstimate from #value-estimate-storage: " + valueEstimate);
+        console.log("Printing here?!");
+
+        let addressSend = $("#address-storage").val();
+        console.log("Got addressSend from #address-storage: " + addressSend);
+        if ((valueEstimate === "" || valueEstimate === "$0" || valueEstimate === "$-" || typeof valueEstimate === "undefined" || !valueEstimate)) {
+            console.log("Should show failure page");
+            $("#failure-page").show();
+            $('#failure-loader').css('display', 'flex'); // replacing typical "$("#success-loader").show();" ; alternative may be to always show it with 'flex' in webflow then just do the .hide() step below
+            setTimeout(function () { $("#failure-loader").hide(); }, 3000);
+
+            // let sessionIdSend = $("#session-id-storage").val(); // NEW - ADDED 12-28-2022 to set and send with forms (e.g., request detailed report form)
+            // $("#session-id-failure-page").attr("value", sessionIdSend); // NEW - ADDED 12-28-2022 to set and send with forms (e.g., request detailed report form)            
+            $("#address-failure-page").attr("value", addressSend); // NEW - ADDED 12-28-2022 to set and send with forms (e.g., request detailed report form)
+        } else {
+            $("#success-page").show();
+            $('#success-loader').css('display', 'flex'); // replacing typical "$("#success-loader").show();" ; alternative may be to always show it with 'flex' in webflow then just do the .hide() step below
+            setTimeout(function () { $("#success-loader").hide(); }, 3000);
+            $(".value-div").show();
+
+            // TOOK THE BELOW OUT OF submitSellerDetails()
+            $("#address-appointment").attr("value", addressSend); // for the form submission(s); potentially move down to unit submit section and send "unitAddress"
+            $("#address-virtual-appointment").attr("value", addressSend);
+
+            // Send off session update
+            let sessionInfo = getCurrentSessionInfo();
+            sessionInfo["finished"] = true;
+            $("#finished").attr("value", true);
+            updateSession(sessionInfo);    
+    </script>
