@@ -1,3 +1,19 @@
+function generateSessionId(length) {
+    let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$*.';
+    let sessionId = '';
+    for (var i = 0; i < length; i++) {
+        sessionId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return sessionId;
+}
+
+function setBuyerSessionId() {
+    console.log('Storing sessionId ' + sessionId);
+    // let sessionId = Math.random().toString(36).substr(2, 12);
+    let sessionId = generateSessionId(20);
+    $("#session-id-storage").attr("value", sessionId);
+    return sessionId;
+}
 
 $(document).ready(function () {
     let queryString = window.location.search;
@@ -31,7 +47,8 @@ $(document).ready(function () {
     if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
         validateAddress(address); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
         $("#seller-form").show();
-    } else if (visitorType == "buyer") {
+    } else if (visitorType == "buyer") { // the problem here is that without validateAddress, we don't call getPropertyInfo then pull a sessionId
+        setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
         $("#buyer-form").show();
     } else if (address) {
         validateAddress(address); // DEFAULT BEHAVIOR if given an address? Proceed to seller form?
@@ -43,7 +60,6 @@ $(document).ready(function () {
     // history.replaceState({}, null, "value"); // UNCOMMENT TO HIDE QUERY STRING
     setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
 });
-
 
 function getSingleRadioSelection(name) {
     /* GET the selected value of a single radio element */
