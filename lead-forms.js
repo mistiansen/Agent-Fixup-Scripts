@@ -8,9 +8,9 @@ function generateSessionId(length) {
 }
 
 function setBuyerSessionId() {
-    console.log('Storing sessionId ' + sessionId);
     // let sessionId = Math.random().toString(36).substr(2, 12);
     let sessionId = generateSessionId(20);
+    console.log('Storing sessionId ' + sessionId);
     $("#session-id-storage").attr("value", sessionId);
     return sessionId;
 }
