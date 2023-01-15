@@ -206,7 +206,8 @@ document.querySelectorAll('input[name="Buyer-Pre-Approved"]').forEach((elem) => 
 
         let sessionInfo = getBuyerSessionInfo();
         console.log('Doing buyer shit with this ... ');
-        console.log([...sessionInfo.entries()]);
+        // console.log([...sessionInfo.entries()]);
+        console.log(JSON.stringify(sessionInfo, null, 4));
         updateSession(sessionInfo);
 
         $("#buyer-form").hide();
