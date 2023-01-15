@@ -66,10 +66,11 @@ function getSingleRadioSelection(name) {
     let checkedRadio = document.querySelector('input[name="' + name + '"]:checked');
     let checkedValue;
     if (checkedRadio != null) {
-        checkedValue = checkedRadio.value
+        checkedValue = checkedRadio.value;
     } else {
         checkedValue = "None given";
     }
+    console.log('Got this checkedValue: ' + checkedValue);
     return checkedValue;
 }
 
@@ -204,6 +205,8 @@ document.querySelectorAll('input[name="Buyer-Pre-Approved"]').forEach((elem) => 
         event.preventDefault(); // prevent webflow defaults
 
         let sessionInfo = getBuyerSessionInfo();
+        console.log('Doing buyer shit with this ... ');
+        console.log([...sessionInfo.entries()]);
         updateSession(sessionInfo);
 
         $("#buyer-form").hide();
