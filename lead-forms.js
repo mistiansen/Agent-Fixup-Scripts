@@ -29,6 +29,13 @@ $(document).ready(function () {
     $(".address-display").html(address);
     $("#address-storage").attr("value", address); // NOTE - consider removing    
 
+    // CITY / STATE (GENERALLY FOR BUYERS)
+    let city = params.get("city"); // either do this or just pull from the page path
+    let state = params.get("state");
+    $("#city-storage").attr("value", city);
+    $("#state-storage").attr("value", state);
+    console.log('Here are city, state: ' + city + ' ' + state);
+
     // STORE THE VISITOR TYPE (buyer vs. seller vs. seller-buyer)
     let visitorType = params.get("visitor");
     $("#visitor-type-storage").attr("value", visitorType);
@@ -85,14 +92,13 @@ function getSpecifiedRadioSelections(checkRadioNames, sessionInfo) {
 }
 
 function getGeneralSessionInfo() {
-    let site = $("#domain-storage").val();
     let agentId = $("#agent-id-storage").val();
     let sessionId = $("#session-id-storage").val();
     let visitorType = $("#visitor-type-storage").val();
     console.log('Got this sessionId from storage: ' + sessionId);
 
     let sessionInfo = {
-        "site": site,
+        "site": "agentfixup.com",
         "agentId": agentId,
         "sessionId": sessionId,
         "visitorType": visitorType,
