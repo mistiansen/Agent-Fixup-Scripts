@@ -64,7 +64,7 @@ $(document).ready(function () {
         console.log("Don't have an address and don't know the visitorType");
     }
 
-    // history.replaceState({}, null, "value"); // UNCOMMENT TO HIDE QUERY STRING
+    history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
     setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
 });
 

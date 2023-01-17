@@ -47,7 +47,15 @@ function parseValuationResult(result) {
         } else {
             let adjustedEstimate = estimatedValue;
             console.log('Got adjustedEstimate: ' + adjustedEstimate);
-            $("#value-estimate-storage").attr("value", adjustedEstimate); // added 12-27-2022 to decide whether to show failure page
+
+            // Added 1/3/2023 to create savings estimate
+            let savingsPercent = 0.0035;
+            let numericEstValue = Number(estimatedValue.replace(/[^0-9.-]+/g, ""));
+            let estimatedSavings = formatter.format(savingsPercent * numericEstValue);
+            $(".estimated-savings").html(estimatedSavings);
+            $(".estimated-savings").val(estimatedSavings);
+            console.log('Got estimated savings: ' + estimatedSavings);
+
             $(".selling-estimate").html(adjustedEstimate);
             $(".selling-estimate").val(adjustedEstimate);
             $(".value-estimate").html(estimatedValue);
