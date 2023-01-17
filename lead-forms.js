@@ -280,4 +280,87 @@ document.getElementById("seller-name-btn").addEventListener('click', (event) => 
 document.getElementById("seller-phone-btn").addEventListener('click', (event) => {
     submitFinalPhone("#seller-phone-popup", "#seller-phone-input");
     document.querySelectorAll('.blurred').forEach(item => item.classList.remove("blurred")); // unblur everything  
-});   
+});
+
+
+/* HANDLE BOUNCE / BACK / EXIT */
+window.onbeforeunload = function () {
+    let finished = $("#finished").val();
+    console.log("finished? " + finished);
+    let warningMessage = null;
+    if (!finished) {
+        console.log('Setting warning');
+        warningMessage = 'Are you sure you want to leave?';
+    }
+    console.log(warningMessage);
+    return warningMessage;
+};
+
+function mobileCheck() {
+    let isMobile = false;
+    if ((window.matchMedia("(max-width: 767px)").matches) && (!!('ontouchstart' in window))) {
+        isMobile = true;
+    }
+    return isMobile;
+};
+
+function handleBounce() {
+    let finished = $("#finished").val(); // has a value if already bounced or reached report
+    // let failedPropertyInfo = $("#failed-property-pull").val();
+    // console.log("Checking for failed property pull in handbounce: " + failedPropertyInfo);
+    // if (!finished && !failedPropertyInfo) { // but if they bounce very early, this won't work. It will attempt to update the session. 
+    if (!finished) { // but if they bounce very early, this won't work. It will attempt to update the session.         
+        let sessionInfo = getCurrentSessionInfo();
+        sessionInfo["finished"] = false;
+        sessionInfo["bounced"] = true;
+        if (sessionInfo["sessionId"]) {
+            console.log('Sending a beacon because we do have a sessionId: ' + sessionInfo["sessionId"]);
+            sessionInfo = JSON.stringify(sessionInfo);
+            navigator.sendBeacon(backendPath + "/session", sessionInfo);
+        }
+        $("#finished").attr("value", "no"); // technically "bounced", but just needs any value so we don't re-notify
+    }
+}
+
+window.onunload = function () {
+    handleBounce();
+};
+
+document.onvisibilitychange = function () {
+    console.log('Visibility change');
+    let mobileDevice = mobileCheck();
+    console.log('Mobile: ' + mobileDevice);
+    if ((mobileDevice) && (document.visibilityState === 'hidden')) {
+        handleBounce();
+    }
+};
+
+
+// // DO THIS IS IF WANT TO SUBMIT ON SHOW REPORT
+// const showReportButtons = document.querySelectorAll('.show-report');
+// for (const showReportButton of showReportButtons) {
+//     showReportButton.addEventListener('click', function handleClick(event) {
+//         console.log('Submitting details to show report...');
+
+//         // TOOK THE BELOW OUT OF submitSellerDetails()
+//         let addressSend = $("#address-storage").val();
+//         $("#address-appointment").attr("value", addressSend); // for the form submission(s); potentially move down to unit submit section and send "unitAddress"
+//         $("#address-virtual-appointment").attr("value", addressSend);
+
+//         // Send off session update
+//         let sessionInfo = getCurrentSessionInfo();
+//         sessionInfo["finished"] = true;
+//         $("#finished").attr("value", true);
+//         updateSession(sessionInfo);
+//     });
+// }
+
+// document.querySelectorAll('.show-report').forEach(item => {
+//     item.addEventListener('click', event => {
+//         $("#visitor-info-page").hide();
+//         $("#success-page").show();
+//         $('#success-loader').css('display', 'flex'); // replacing typical "$("#success-loader").show();" ; alternative may be to always show it with 'flex' in webflow then just do the .hide() step below
+//         setTimeout(function () { $("#success-loader").hide(); }, 3000);
+//         $(".value-div").show();
+//     })
+// });
