@@ -36,6 +36,7 @@
     function fillInCity() {
       // Get the place details from the autocomplete object.
       var place = this.getPlace();
+
       if (typeof place.formatted_address != "undefined") {
         console.log(this.inputId);
         console.log(place.formatted_address);
@@ -77,10 +78,18 @@
     function fillInAddress() {
       // Get the place details from the autocomplete object.
       var place = this.getPlace();
+
+      let lat = place.geometry.location.lat();
+      let lng = place.geometry.location.lng();
+      console.log(lat);
+      console.log(lng);      
+
       if (typeof place.formatted_address != "undefined") {
         console.log(this.inputId);
         console.log(place.formatted_address);
         document.getElementById(this.inputId).value = place.formatted_address;
+        $('#lat-storage').attr("value", lat);
+        $('#lng-storage').attr("value", lng);        
       }
       for (var i = 0; i < place.address_components.length; i++) {
           let component = place.address_components[i];
@@ -100,7 +109,7 @@
 </script>  
 
 <script>
-    function submitAddress(submitAddressBtnSelector, addressInputId, visitorType) {
+    async function submitAddress(submitAddressBtnSelector, addressInputId, visitorType) {
         // e.preventDefault(); // prevent webflow defaults
         let address = document.getElementById(addressInputId).value.trim();
         if (address) {
@@ -111,47 +120,56 @@
             return;
         }
 
-        let routeToUrl = determineDestination(address, visitorType);
+        let routeToUrl = await determineDestination(address, visitorType);
         
         console.log('Routing to URL ' + routeToUrl);
         location.href = routeToUrl;        
     }
 
-    function determineDestination(address, visitorType) {
+    async function determineDestination(address, visitorType) {
         const urlParams = new URLSearchParams(window.location.search);
         let dest = urlParams.get('to');
         let city = urlParams.get('city');
+        let state = urlParams.get('state');
         console.log('Got dest: ' + dest);
         console.log('Got city: ' + city);
 
-        let toPath = 'find/us';
-        if (dest) {
-            toPath = 'find/' + dest;
-        } else if (city) {
-            toPath = 'cities/' + city;
+        console.log('No city or dest explicitly specified, pulling from address');
+        city = $("#city-storage").val();
+        state = $("#state-storage").val();
+        console.log('City, state from storage ' + city + ' ' + state);
+        
+        let cityFmt = city.toLowerCase().split(" ").join("-");
+        console.log(cityFmt);
+        let stateFmt = state.toLowerCase().split(" ").join("-");
+        console.log(stateFmt);
+        
+        let toPath;
+        let cityId = cityFmt + "-" + stateFmt;                
+        if (agentFixupCities.includes(cityId)) {
+            toPath = "cities/" + cityId;                  
         } else {
-            // THIS IS THE TYPICAL CASE
-            console.log('No city or dest explicitly specified, pulling from address');
-            city = $("#city-storage").val();
-            let state = $("#state-storage").val();
-            console.log('City, state from storage ' + city + ' ' + state);
-
-            let cityFmt = city.toLowerCase().split(" ").join("-");
-            console.log(cityFmt);
-            let stateFmt = state.toLowerCase().split(" ").join("-");
-            console.log(stateFmt);
-
-            let cityState = cityFmt + "-" + stateFmt;                
-            if (agentFixupCities.includes(cityState)) {
-                toPath = "cities/" + cityState;                  
-            } else {
-                console.log('Not one of our cities');
-                toPath = "general";                  
-            }
+            let lat = $("#lat-storage").val();
+            let lng = $("#lng-storage").val();
+            console.log('Need to find closest city to: ' + lat + ' ' + lng);
+            await $.ajax({
+                url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
+                method: 'POST',
+                data: JSON.stringify({'cityId': cityId, 'stateId': stateFmt, 'lat': lat, 'lng': lng}),
+            }).done(function (result) {
+                let closestCityId = result.closest_city_id;
+                console.log('Successfully found the closest city: ' + closestCityId);
+                toPath = "cities/" + closestCityId;                  
+            }).fail(function (err) {
+                console.log('Unabled to find closest city');
+                console.log(err);
+                toPath = "general";                          
+            });            
         }
 
         let routeToPathBase = 'https://agentfixup.com/' + toPath;
-        let queryString = '?address=' + encodeURIComponent(address) + '&visitor=' + encodeURIComponent(visitorType);
+        // let queryString = '?address=' + encodeURIComponent(address) + '&visitor=' + encodeURIComponent(visitorType);
+        let queryString = '?address=' + encodeURIComponent(address) + '&city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state) + '&visitor=' + encodeURIComponent(visitorType);
         let routeToUrl = routeToPathBase + queryString;        
         return routeToUrl;
     }
