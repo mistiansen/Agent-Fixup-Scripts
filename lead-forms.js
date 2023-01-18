@@ -75,7 +75,8 @@ function getSingleRadioSelection(name) {
     if (checkedRadio != null) {
         checkedValue = checkedRadio.value;
     } else {
-        checkedValue = "None given";
+        // checkedValue = "None given";
+        checkedValue = "";
     }
     console.log('Got this checkedValue: ' + checkedValue);
     return checkedValue;
@@ -112,6 +113,7 @@ function getSellerSessionInfo() {
     let sessionInfo = getGeneralSessionInfo();
 
     // PULL validated address info to attempt the skiptrace in the backend
+    sessionInfo['Submitted-Address'] = $("#address-storage").val();
     sessionInfo['addressSend'] = $("#address-storage").val();
     sessionInfo['validatedStreet'] = $("#street-storage").val(); // for the skiptrace if property info pull fails; we generally pull the address from the property info record so we know for sure where the value came from (not that there should be any difference)
     sessionInfo['validatedUnit'] = $("#unit-storage").val();
