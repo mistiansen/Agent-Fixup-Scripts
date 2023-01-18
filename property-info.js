@@ -148,6 +148,7 @@ function storeValidatedAddressComponents(validationResult) {
 
 
 function proceedAfterAddressValidated(address) {
+    console.log('Proceeding after ADDRESS VALIDATION');
     // REQUEST PROPERTY INFO FROM BACKEND
     let agentId = $("#agent-id-storage").val();
     let site = $("#domain-storage").val();

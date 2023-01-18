@@ -123,7 +123,7 @@ function getSellerSessionInfo() {
     sessionInfo['validatedZip'] = $("#zip-storage").val(); // for the skiptrace if property info pull fails                
     console.log('Got seller session info before submit: ' + sessionInfo);
 
-    let checkRadioNames = ["Relationship-to-Home", "Considering-Selling"];
+    let checkRadioNames = ["Relationship-to-Home", "Considering-Selling", "Ownership-Type", "Also-Buying?"];
     sessionInfo = getSpecifiedRadioSelections(checkRadioNames, sessionInfo);
     console.log('Sending this sessionInfo: ' + sessionInfo);
 
@@ -239,6 +239,7 @@ document.querySelectorAll('input[name="Also-Buying"]').forEach((elem) => {
             updateSession(sessionInfo);
 
             $("#seller-form").hide();
+            console.log('Should be showing seller-success-page...');
             $("#seller-success-page").show();
             $('#seller-name-popup').css('display', 'flex');
 
