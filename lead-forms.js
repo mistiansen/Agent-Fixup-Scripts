@@ -213,8 +213,7 @@ document.querySelectorAll('input[name="Buyer-Pre-Approved"]').forEach((elem) => 
         event.preventDefault(); // prevent webflow defaults
 
         let sessionInfo = getBuyerSessionInfo();
-        console.log('Doing buyer shit with this ... ');
-        // console.log([...sessionInfo.entries()]);
+        console.log('Updating buyer info ... ');
         console.log(JSON.stringify(sessionInfo, null, 4));
         updateSession(sessionInfo);
 
@@ -235,6 +234,8 @@ document.querySelectorAll('input[name="Also-Buying"]').forEach((elem) => {
             event.preventDefault(); // prevent webflow defaults
 
             let sessionInfo = getSellerSessionInfo();
+            console.log('Updating seller info ... ');
+            console.log(JSON.stringify(sessionInfo, null, 4));
             updateSession(sessionInfo);
 
             $("#seller-form").hide();
