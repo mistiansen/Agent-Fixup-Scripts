@@ -69,8 +69,9 @@ function parseValuationResult(result) {
             $(".confidence-score").val(confidenceScore);
         }
     } catch (error) {
-        console.log(error);
-        $("#failed-property-pull").attr("value", "true"); // NEW - ADDED 12-29-2022 to set and send with forms (e.g., request detailed report form)        
+        // console.log(error);
+        console.log('In the catch for parseValuationResult');
+        // $("#failed-property-pull").attr("value", "true"); // NEW - ADDED 12-29-2022 to set and send with forms (e.g., request detailed report form)        
         $(".estimated-savings").html("$1,000");
         $(".estimated-savings").val("$1,000");
         $(".offer-header").html("We were unable to pull your value report");
@@ -124,7 +125,7 @@ function pullPropertyInfo(address, agentId, domain) {
     }).fail(function (err) {
         console.log('Unabled to pull home value estimate');
         console.log(err);
-        $("#failed-property-pull").attr("value", "true"); // NEW - ADDED 12-29-2022 to set and send with forms (e.g., request detailed report form)
+        // $("#failed-property-pull").attr("value", "true"); // NEW - ADDED 12-29-2022 to set and send with forms (e.g., request detailed report form)
 
     });
 }
