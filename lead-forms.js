@@ -123,7 +123,7 @@ function getSellerSessionInfo() {
     sessionInfo['validatedZip'] = $("#zip-storage").val(); // for the skiptrace if property info pull fails                
     console.log('Got seller session info before submit: ' + sessionInfo);
 
-    let checkRadioNames = ["Relationship-to-Home", "Considering-Selling", "Ownership-Type", "Also-Buying?"];
+    let checkRadioNames = ["Relationship-to-Home", "Considering-Selling", "Ownership-Type", "Also-Buying"];
     sessionInfo = getSpecifiedRadioSelections(checkRadioNames, sessionInfo);
     console.log('Sending this sessionInfo: ' + sessionInfo);
 
