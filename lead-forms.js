@@ -306,11 +306,14 @@ function mobileCheck() {
 
 function handleBounce() {
     let finished = $("#finished").val(); // has a value if already bounced or reached report
-    // let failedPropertyInfo = $("#failed-property-pull").val();
-    // console.log("Checking for failed property pull in handbounce: " + failedPropertyInfo);
-    // if (!finished && !failedPropertyInfo) { // but if they bounce very early, this won't work. It will attempt to update the session. 
     if (!finished) { // but if they bounce very early, this won't work. It will attempt to update the session.         
-        let sessionInfo = getCurrentSessionInfo();
+        let visitorType = $("#visitor-type-storage").val();
+        let sessionInfo;
+        if (visitorType == "buyer") {
+            sessionInfo = getBuyerSessionInfo();
+        } else {
+            sessionInfo = getSellerSessionInfo();
+        }
         sessionInfo["finished"] = false;
         sessionInfo["bounced"] = true;
         if (sessionInfo["sessionId"]) {
