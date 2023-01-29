@@ -237,6 +237,37 @@ function validateAddress(address) {
     });
 }
 
+function validateCity(cityText) {
+    console.log('About to validate address: ' + address);
+    let url = backendPath + "/city";
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: JSON.stringify({ "city": cityText }), // data: JSON.stringify(sellingDetails),
+    }).done(function (result) {
+        console.log('Validation result ' + result);
+        console.log('Invalid address? ' + result.invalidCity);
+        $('#updating-home-details-loader').hide()
+        // $('#updating-home-details-loader').css('display', 'flex');
+        $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
+        try {
+            if (!result.invalidCity) {
+                console.log('Looks like it was a valid city');
+                let cityId = result.cityId;
+                let routeToUrl = 'https://agentfixup.com/cities/' + cityId;
+                console.log('Routing to URL ' + routeToUrl);
+                location.href = routeToUrl;
+            } else {
+                let errorMessage = "Need a valid city & state. Please select from the autocomplete.";
+                console.log(errorMessage);
+                alert(errorMessage);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    });
+}
+
 document.getElementById("no-unit-btn").addEventListener('click', (event) => {
     console.log('Just clicked no unit btn');
     console.log('Progressing without re-validating the no-unit address');
@@ -308,7 +339,7 @@ document.getElementById("new-unit-needed-btn").addEventListener('click', (event)
 
 document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
     let zipCode = document.getElementById("zip-code-input").value.trim();
-    $("#zip-storage").attr("value", unit); // NOTE - NEW ADDED 1/4/2022 (not sure it's necessary)
+    $("#zip-storage").attr("value", zipCode); // NOTE - NEW ADDED 1/4/2022 (not sure it's necessary)
 
     let address = $("#address-storage").val();
     console.log('Adding to address from storage: ' + address);
