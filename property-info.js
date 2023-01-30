@@ -136,9 +136,15 @@ function storeValidatedAddressComponents(validationResult) {
     $("#street-storage").attr("value", validationResult.streetNoUnit); // NOTE 1/4/2023 - WE need without unit, so can add unit on if it needs a corrected unit. "addressLine1" may also work. 
     $("#unit-storage").attr("value", validationResult.unit); // should be included above in street, I think
     $("#unit-type-storage").attr("value", validationResult.unitType); // sub-premises type
+    console.log('Storing city in storage:' + city);
+    console.log('Storing state in storage:' + state);
     $("#city-storage").attr("value", validationResult.city);
     $("#state-storage").attr("value", validationResult.state);
     $("#zip-storage").attr("value", validationResult.zip);
+
+    // ADDED 1/29/2023 - USE CITY ID
+    let cityId = validationResult.cityId;
+    $("#city-id-storage").attr("value", cityId); // store our city-id / slug corresponding to the city collection page
 }
 
 
