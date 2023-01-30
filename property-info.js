@@ -85,17 +85,13 @@ function parseValuationResult(result) {
 }
 
 // function pullPropertyInfo(address, street, city, state, zip, agentId, domain) {
-function pullPropertyInfo(address, agentId, domain) {
+function pullPropertyInfo(address, agentId) {
 
     /* Currently, each pullPropertyInfo request returns a new sessionId */
     let propertyRequest = {
         "address": address,
-        // "validatedStreet": street, // for the skiptrace if property info pull fails
-        // "ValidatedCity": city,
-        // "validatedState": state,
-        // "validatedZip": zip, // for the skiptrace if property info pull fails
         "agentId": agentId,
-        "site": domain
+        "site": "agentfixup.com"
     };
 
     // ADDED 8/22/22 - Use existing sessionId if it exists
@@ -136,25 +132,27 @@ function storeValidatedAddressComponents(validationResult) {
     $("#street-storage").attr("value", validationResult.streetNoUnit); // NOTE 1/4/2023 - WE need without unit, so can add unit on if it needs a corrected unit. "addressLine1" may also work. 
     $("#unit-storage").attr("value", validationResult.unit); // should be included above in street, I think
     $("#unit-type-storage").attr("value", validationResult.unitType); // sub-premises type
-    console.log('Storing city in storage:' + city);
-    console.log('Storing state in storage:' + state);
+
+    console.log('Storing city in storage:' + validationResult.city);
+    console.log('Storing state in storage:' + validationResult.state);
     $("#city-storage").attr("value", validationResult.city);
     $("#state-storage").attr("value", validationResult.state);
+
     $("#zip-storage").attr("value", validationResult.zip);
 
     // ADDED 1/29/2023 - USE CITY ID
     let cityId = validationResult.cityId;
+    console.log('Pulled CITY ID from validation result: ' + cityId);
     $("#city-id-storage").attr("value", cityId); // store our city-id / slug corresponding to the city collection page
 }
 
 
-function proceedAfterAddressValidated(address) {
+function proceedAfterAddressValidated(result) {
+    let address = result.addressTextModified
     console.log('Proceeding after ADDRESS VALIDATION');
     // REQUEST PROPERTY INFO FROM BACKEND
     let agentId = $("#agent-id-storage").val();
-    let site = $("#domain-storage").val();
-    // let address = $("#address-storage").val(); // house number, street, and unit (if any)
-    pullPropertyInfo(address, agentId, site); // alternatively, we could do this in the address valdation endpoint
+    pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
 
     $("#zip-code-page").hide();
     $("#condo-unit-page").hide(); // may have never gotten here
@@ -164,7 +162,68 @@ function proceedAfterAddressValidated(address) {
     $("#relationship-page").show();
 }
 
-function validateAddress(address) {
+async function rerouteAfterValidation(result) {
+    console.log('REROUTING after address validation');
+
+    // let agentId = $("#agent-id-storage").val();
+    let visitorType = $("#visitor-type-storage").val();
+    let destination = $("#destination-storage").val(); // agentId
+    let address = $("#address-storage").val(); // house number, street, and unit (if any)
+    let cityId = $("#city-id-storage").val();
+
+    if (typeof cityId != "undefined" && cityId == result.cityId) {
+        console.log('Staying on this page');
+    } else {
+
+
+        if (agentFixupCities.includes(cityId)) {
+            toPath = "cities/" + cityId;
+        } else {
+            let lat = $("#lat-storage").val();
+            let lng = $("#lng-storage").val();
+            console.log('Need to find closest city to: ' + lat + ' ' + lng);
+
+            try {
+                let req = await $.ajax({
+                    url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
+                    method: 'POST',
+                    data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt, 'lat': lat, 'lng': lng }),
+                })
+
+                req.success(function (result) {
+                    let closestCityId = result.closest_city_id;
+                    console.log('Successfully found the closest city: ' + closestCityId);
+                    toPath = "cities/" + closestCityId;
+                    queryString = '?city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state);
+                });
+
+                req.fail(function () {
+                    console.log('Oh noes!');
+                    console.log('Unabled to find closest city');
+                    toPath = "cities/locate";
+                    console.log('After setting toPath in fail');
+                });
+
+            } catch (error) {
+                console.log('Oh noes!');
+                console.log('Unabled to find closest city');
+                toPath = "cities/locate";
+                console.log('After setting toPath in fail');
+            }
+        }
+
+
+        location.href = 'NEW URL'; // carry the address over and don't re-validate it
+    }
+    // NOW WE SHOULD ACTUALLY ALSO RE-ROUTE     
+}
+
+function postValidation(func) {
+    func();
+}
+
+// function validateAddress(address) {
+function validateAddress(address, validationCallback) {
     console.log('About to validate address: ' + address);
     let url = backendPath + "/address";
     $.ajax({
@@ -186,7 +245,9 @@ function validateAddress(address) {
                 // NEW 1/4/2022 - THE ABOVE WRAPPED IN FUNCTION CALLS
                 // await storeValidatedAddressComponents(result); // NEW 1/4/2022 - is the await necessary? We definitely need the address to be there 
                 // storeValidatedAddressComponents(result); // NEW 1/4/2022 - is the await necessary? We definitely need the address to be there 
-                proceedAfterAddressValidated(result.addressTextModified);
+
+                // proceedAfterAddressValidated(result.addressTextModified);
+                postValidation(function () { validationCallback(result) });
             } else if (result.invalidZip) {
                 let addressDisplayText = address;
                 $(".address-display").html(addressDisplayText);
@@ -213,13 +274,14 @@ function validateAddress(address) {
                 if (unitCorrectionAttempted) {
                     console.log('Proceeding because already attempted to correct the unit');
                     storeValidatedAddressComponents(result);
-                    proceedAfterAddressValidated(result.addressTextModified);
+                    // proceedAfterAddressValidated(result.addressTextModified);
+                    postValidation(function () { validationCallback(result) });
                 } else {
                     console.log('Have not yet attempted to correct the unit; doing so now');
                     $("#unit-correction-attempted").attr("value", "true"); // ADDED 1/4/2022 - SET INDICATOR for whether to keep asking for unit
                     $(".address-display").html(addressDisplayText);
                     $("#address-storage").attr("value", addressDisplayText);
-                    $("#relationship-page").hide();
+                    // $("#relationship-page").hide(); // COMMENTED OUT 1/30/2022 - doesn't exist on the AF validation page and shouldn't be necessary anyway
                     $("#zip-code-page").hide();
                     $("#invalid-address-page").hide();
                     $("#condo-unit-page").hide();
@@ -229,7 +291,7 @@ function validateAddress(address) {
                 console.log('Invalid address...deciding what to do next');
                 $("#zip-code-page").hide();
                 $("#condo-unit-page").hide();
-                $("#relationship-page").hide(); // but wouldn't it be this?
+                // $("#relationship-page").hide(); // but wouldn't it be this? // COMMENTED OUT 1/30/2022 - doesn't exist on the AF validation page and shouldn't be necessary anyway
                 $("#invalid-address-page").show();
                 let errorMessage = 'We were unable to validate that address';
                 if (result.extraneousUnitProvided) {
@@ -243,36 +305,36 @@ function validateAddress(address) {
     });
 }
 
-function validateCity(cityText) {
-    console.log('About to validate address: ' + address);
-    let url = backendPath + "/city";
-    $.ajax({
-        url: url,
-        method: 'POST',
-        data: JSON.stringify({ "city": cityText }), // data: JSON.stringify(sellingDetails),
-    }).done(function (result) {
-        console.log('Validation result ' + result);
-        console.log('Invalid address? ' + result.invalidCity);
-        $('#updating-home-details-loader').hide()
-        // $('#updating-home-details-loader').css('display', 'flex');
-        $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
-        try {
-            if (!result.invalidCity) {
-                console.log('Looks like it was a valid city');
-                let cityId = result.cityId;
-                let routeToUrl = 'https://agentfixup.com/cities/' + cityId;
-                console.log('Routing to URL ' + routeToUrl);
-                location.href = routeToUrl;
-            } else {
-                let errorMessage = "Need a valid city & state. Please select from the autocomplete.";
-                console.log(errorMessage);
-                alert(errorMessage);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    });
-}
+// function validateCity(cityText) {
+//     console.log('About to validate address: ' + address);
+//     let url = backendPath + "/city";
+//     $.ajax({
+//         url: url,
+//         method: 'POST',
+//         data: JSON.stringify({ "city": cityText }), // data: JSON.stringify(sellingDetails),
+//     }).done(function (result) {
+//         console.log('Validation result ' + result);
+//         console.log('Invalid address? ' + result.invalidCity);
+//         $('#updating-home-details-loader').hide()
+//         // $('#updating-home-details-loader').css('display', 'flex');
+//         $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
+//         try {
+//             if (!result.invalidCity) {
+//                 console.log('Looks like it was a valid city');
+//                 let cityId = result.cityId;
+//                 let routeToUrl = 'https://agentfixup.com/cities/' + cityId;
+//                 console.log('Routing to URL ' + routeToUrl);
+//                 location.href = routeToUrl;
+//             } else {
+//                 let errorMessage = "Need a valid city & state. Please select from the autocomplete.";
+//                 console.log(errorMessage);
+//                 alert(errorMessage);
+//             }
+//         } catch (error) {
+//             console.log(error);
+//         }
+//     });
+// }
 
 document.getElementById("no-unit-btn").addEventListener('click', (event) => {
     console.log('Just clicked no unit btn');

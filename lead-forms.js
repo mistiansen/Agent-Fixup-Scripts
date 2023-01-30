@@ -25,6 +25,10 @@ $(document).ready(function () {
     let address = params.get("address");
     console.log('Here is the address: ' + address);
 
+    // If we're sending pre-validated info
+    let validated = params.get("validated");
+    console.log('Already validated? ' + validated);
+
     // UPDATE ADDRESS DISPLAY AND STORAGE FIELDS
     $(".address-display").html(address);
     $("#address-storage").attr("value", address); // NOTE - consider removing    
@@ -52,15 +56,21 @@ $(document).ready(function () {
     $('#updating-home-details-loader').hide();
 
     if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
-        validateAddress(address); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
         $("#seller-form").show();
+        if (typeof validated == "undefined" || !validated) {
+            validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+        } else {
+            pullPropertyInfo(address, destination); // alternatively, we could do this in the address valdation endpoint
+        }
     } else if (visitorType == "buyer") { // the problem here is that without validateAddress, we don't call getPropertyInfo then pull a sessionId
+        // WE COULD CHECK WHETHER VALIDATED, BUT WE SHOULD NEVER GET TO BUYER PAGE WITHOUT A PROPER CITY, I THINK
         setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
         $("#buyer-form").show();
     } else if (address) {
-        validateAddress(address); // DEFAULT BEHAVIOR if given an address? Proceed to seller form?
+        validateAddress(address, proceedAfterAddressValidated); // DEFAULT BEHAVIOR if given an address? Proceed to seller form?
     } else {
         // SHOW SOME CATCHALL? PROMPT FOR ADDRESS?
+        validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
         console.log("Don't have an address and don't know the visitorType");
     }
 
