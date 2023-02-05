@@ -5,77 +5,34 @@
 
 <script>
     function initAutocomplete() {
-        // initCityAutocomplete();      
-        initAddressAutocomplete();
-    }    
-
-    // function initCityAutocomplete() {
-    //     // var input = document.getElementById('search-buy');
-    //     // var options = {
-    //     //     types: ['(cities)'],
-    //     //     componentRestrictions: {country: 'us'}
-    //     // };
-    //     // var autocomplete = new google.maps.places.Autocomplete(input, options);
-    //     var inputs = document.getElementsByClassName('city-input');
-    
-    //     var options = {
-    //         // types: ['(cities)'],
-    //         componentRestrictions: {country: 'us'}
-    //     };        
-    
-    //     var autocompletes = [];
-    
-    //     for (var i = 0; i < inputs.length; i++) {
-    //         var autocomplete = new google.maps.places.Autocomplete(inputs[i], options);
-    //         autocomplete.inputId = inputs[i].id;
-    //         autocomplete.addListener('place_changed', fillInCity);
-    //         autocompletes.push(autocomplete);
-    //     }        
-    // }
-
-    function fillInCity() {
-      // Get the place details from the autocomplete object.
-      var place = this.getPlace();
-
-      if (typeof place.formatted_address != "undefined") {
-        console.log(this.inputId);
-        console.log(place.formatted_address);
-        document.getElementById(this.inputId).value = place.formatted_address;
-      }
-      for (var i = 0; i < place.address_components.length; i++) {
-          let component = place.address_components[i];
-          let componentType = place.address_components[i].types[0];
-              if (componentType == "locality") {
-                let city = component.short_name;
-                console.log('LOCALITY!!');            
-                console.log('Got this city: ' + city);
-                $('#city-storage').attr("value", city);
-              } else if (componentType == "administrative_area_level_1") {
-                let state = component.short_name;
-                console.log('Got this state: ' + state);
-                $('#state-storage').attr("value", state);
-              }
-        }       
-    }    
-
-    function initAddressAutocomplete() {
         var inputs = document.getElementsByClassName('address-input');
     
-        var options = {
+        var sellerOptions = {
             componentRestrictions: {country: ['us']}
         };
+
+        var buyerOptions = {
+            types: ['(cities)'],
+            componentRestrictions: {country: ['us']}
+        };           
     
         var autocompletes = [];
     
         for (var i = 0; i < inputs.length; i++) {
-            var autocomplete = new google.maps.places.Autocomplete(inputs[i], options);
-            autocomplete.inputId = inputs[i].id;
-            autocomplete.addListener('place_changed', fillInAddress);
+            let inputId = inputs[i].id;
+            let autocomplete;
+            if (inputId == "address-buy") {
+                autocomplete = new google.maps.places.Autocomplete(inputs[i], buyerOptions);
+            } else {
+                autocomplete = new google.maps.places.Autocomplete(inputs[i], sellerOptions);
+            }
+            autocomplete.inputId = inputId;
+            autocomplete.addListener('place_changed', fillInput);
             autocompletes.push(autocomplete);
         }
     }
 
-    function fillInAddress() {
+    function fillInput() {
       // Get the place details from the autocomplete object.
       var place = this.getPlace();
 
@@ -120,19 +77,34 @@
             return;
         }
 
-        let routeToUrl = await determineDestination(address, visitorType);
+        let routeToUrl = await determineSellerDestination(address, visitorType);
         
         console.log('Routing to URL ' + routeToUrl);
         location.href = routeToUrl;        
     }
 
-    async function determineDestination(address, visitorType) {
+    async function submitCity(submitCityBtnSelector, cityInputId) {
+        // e.preventDefault(); // prevent webflow defaults
+        let city = document.getElementById(cityInputId).value.trim();
+        if (city) {
+            $(submitCityBtnSelector).val("Going...");
+            console.log('Routing with city ' + city);
+        } else {
+            console.log('Nothing entered');
+            return;
+        }
+        
+        let routeToUrl = await determineBuyerDestination(address);
+        
+        console.log('Routing to URL ' + routeToUrl);
+        location.href = routeToUrl;        
+    }    
+
+    async function determineBuyerDestination(cityInput, visitorType) {
+        // WHAT WE SHOULD POTENTIALLY DO instead of sending every address to address validation is just send those that are not from autocomplete, by passing a "validated" flag and routing directly to the city page
         const urlParams = new URLSearchParams(window.location.search);
         let dest = urlParams.get('to');
-        let city = urlParams.get('city');
-        let state = urlParams.get('state');
         console.log('Got dest: ' + dest);
-        console.log('Got city: ' + city);
 
         console.log('No city or dest explicitly specified, pulling from address');
         city = $("#city-storage").val();
@@ -140,39 +112,80 @@
         console.log('City, state from storage ' + city + ' ' + state);
         
         let cityFmt = city.toLowerCase().split(" ").join("-");
-        console.log(cityFmt);
         let stateFmt = state.toLowerCase().split(" ").join("-");
-        console.log(stateFmt);
+        let cityId = cityFmt + "-" + stateFmt;                
+        console.log(cityId);
         
         let toPath;
-        let cityId = cityFmt + "-" + stateFmt;                
+        let queryString  = '?visitor=' + encodeURIComponent(visitorType) + '&to=' + encodeURIComponent(dest);
         if (agentFixupCities.includes(cityId)) {
-            toPath = "cities/" + cityId;                  
+            // FINE FOR BUYERS AND SELLERS (unless we end up wanting to remove address validation from lead-forms.js)
+            toPath = "cities/" + cityId;   
+            queryString = '?city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state);               
         } else {
-            let lat = $("#lat-storage").val();
-            let lng = $("#lng-storage").val();
-            console.log('Need to find closest city to: ' + lat + ' ' + lng);
-            await $.ajax({
-                url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
-                method: 'POST',
-                data: JSON.stringify({'cityId': cityId, 'stateId': stateFmt, 'lat': lat, 'lng': lng}),
-            }).done(function (result) {
-                let closestCityId = result.closest_city_id;
-                console.log('Successfully found the closest city: ' + closestCityId);
-                toPath = "cities/" + closestCityId;                  
-            }).fail(function (err) {
-                console.log('Unabled to find closest city');
-                console.log(err);
-                toPath = "general";                          
-            });            
+            validateCity(cityInput); // address is just whatever we pulled from the "address" input text field
+            // if (typeof city == "undefined" || city == "" || state == "") {
+            //     // VALIDATE RAW "CITY" / address field input
+            // } else {
+            //     // MAYBE send off the cityId, stateId, even lat, lng and find closest city that way
+            // }
         }
-
+        
         let routeToPathBase = 'https://agentfixup.com/' + toPath;
-        // let queryString = '?address=' + encodeURIComponent(address) + '&visitor=' + encodeURIComponent(visitorType);
-        let queryString = '?address=' + encodeURIComponent(address) + '&city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state) + '&visitor=' + encodeURIComponent(visitorType);
+        console.log('Going to try to route to ' + routeToPathBase);
         let routeToUrl = routeToPathBase + queryString;        
+        console.log('Added query string so now going to try to route to ' + routeToUrl);
         return routeToUrl;
     }
+
+    async function determineSellerDestination(address, visitorType) {
+        // WHAT WE SHOULD POTENTIALLY DO instead of sending every address to address validation is just send those that are not from autocomplete, by passing a "validated" flag and routing directly to the city page
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // GET THE ROUTE TO DESTINATION 
+        let dest = params.get("to");
+        console.log('Got dest: ' + dest);
+        if (typeof dest == "undefined") {
+            dest = "6299a06cd8258300049a1a1a"; // our agentId
+        }        
+        
+        // WE INCLUDE visitorType here because it could be either "seller" or "seller-buyer" (both route to same logic)
+        let queryString  = '?address=' + encodeURIComponent(address) + '&visitor=' + encodeURIComponent(visitorType) + '&validated=' + encodeURIComponent(false);
+        queryString = queryString + '&to=' + dest;
+        
+        // GO TO the validate-address page
+        let routeToUrl = 'https://agentfixup.com/locate' + queryString;
+        console.log('Going to try to route to ' + routeToUrl);
+        return routeToUrl;
+    }    
+
+    async function rerouteAfterCityValidation(result) {
+        console.log('REROUTING after address validation');
+        // let agentId = $("#agent-id-storage").val();
+        // let visitorType = $("#visitor-type-storage").val();
+        let destination = $("#destination-storage").val(); // agentId
+        let address = $("#address-storage").val(); // house number, street, and unit (if any)
+        
+        // let cityId = $("#city-id-storage").val();
+        let cityId = result.cityId;
+
+        let toPath;
+        let isSupportedCity = result.supportedCity;
+        if (typeof isSupportedCity != "undefined" && isSupportedCity) {
+            console.log('The city was valid');        
+            toPath = "cities/" + cityId;
+        } else {    
+            let closestCityInfo = result.closestSupportedCity;
+            let closestCityId = closestCityInfo.closestCityId;
+            if (typeof closestCityId != "undefined") {
+                console.log('Got a closest city from BACKEND' + closestCityId);
+            } else {
+                // NOT SURE WHAT TO DO
+                // ROUTE TO "locate" or stay here to ask for something else?
+                toPath = "cities/locate";
+            }
+        }
+    }    
 
     $("body").on("click", "#submit-address-btn", async function (e) {
         e.preventDefault(); // prevent webflow defaults
@@ -181,7 +194,9 @@
     
     $("body").on("click", "#submit-address-buy-btn", async function (e) {
         e.preventDefault(); // prevent webflow defaults
-        submitAddress("#submit-address-buy-btn", "address-buy", "buyer");
+
+        // submitAddress("#submit-address-buy-btn", "address-buy", "buyer");
+        submitCity("#submit-address-buy-btn", "address-buy", "buyer");
     });    
 
     $("body").on("click", "#submit-address-buy-sell-btn", async function (e) {

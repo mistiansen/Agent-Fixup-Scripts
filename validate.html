@@ -1,0 +1,175 @@
+<script type="text/javascript"
+    src="https://cdn.jsdelivr.net/gh/mistiansen/Agent-Fixup-Scripts@aa1956da33bdecdbba446af63c4dc18aadb929b7/property-info.js">
+</script>
+
+<script>
+
+async function rerouteAfterValidation(result) {
+    console.log('REROUTING after address validation');
+
+    // let agentId = $("#agent-id-storage").val();
+    // let visitorType = $("#visitor-type-storage").val();
+    let destination = $("#destination-storage").val(); // agentId
+    let address = $("#address-storage").val(); // house number, street, and unit (if any)
+    
+    // let cityId = $("#city-id-storage").val();
+    let cityId = result.cityId;
+
+    let toPath;
+    let isSupportedCity = result.supportedCity;
+    if (typeof isSupportedCity != "undefined" && isSupportedCity) {
+        console.log('The city was valid');        
+        toPath = "cities/" + cityId;
+    } else {    
+        let closestCityInfo = result.closestSupportedCity;
+        let closestCityId = closestCityInfo.closestCityId;
+        if (typeof closestCityId != "undefined") {
+            console.log('Got a closest city from BACKEND' + closestCityId);
+        } else {
+            // NOT SURE WHAT TO DO
+            // ROUTE TO "locate" or stay here to ask for something else?
+            toPath = "cities/locate";
+        }
+    }
+
+    // let toPath;
+    // if (typeof cityId == "undefined" || cityId == "") {
+    //     toPath = "cities/locate";
+    // } else {
+    //     if (agentFixupCities.includes(cityId)) {
+    //         toPath = "cities/" + cityId;
+    //     } else {
+    //         let city = result.city;
+    //         let state = result.state;
+    //         try {
+    //             let req = await $.ajax({
+    //                 url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
+    //                 method: 'POST',
+    //                 // data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt, 'lat': lat, 'lng': lng }),
+    //                 data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt }),
+    //             })
+
+    //             req.success(function (result) {
+    //                 let closestCityId = result.closest_city_id;
+    //                 console.log('Successfully found the closest city: ' + closestCityId);
+    //                 toPath = "cities/" + closestCityId;
+    //                 queryString = '?city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state);
+    //             });
+
+    //             req.fail(function () {
+    //                 console.log('Oh noes!');
+    //                 console.log('Unabled to find closest city');
+    //                 toPath = "cities/locate";
+    //                 console.log('After setting toPath in fail');
+    //             });
+
+    //         } catch (error) {
+    //             console.log('Oh noes!');
+    //             console.log('Unabled to find closest city');
+    //             toPath = "cities/locate";
+    //             console.log('After setting toPath in fail');
+    //         }
+    //     }
+
+        let queryString  = '?address=' + encodeURIComponent(address) + '&validated=true' + '&destination=' + encodeURIComponent(destination);
+        let routeToPathBase = 'https://agentfixup.com/' + toPath;
+        let routeToUrl = routeToPathBase + queryString;   
+        location.href = routeToUrl; // carry the address over and don't re-validate it
+}    
+
+$(document).ready(function () {
+    let queryString = window.location.search;
+    console.log(queryString);
+    let params = new URLSearchParams(queryString);
+    console.log(params);
+
+    // NOTE that there should be no "address" for buyers (maybe just sellers initially)
+    let address = params.get("address");
+    console.log('Here is the address: ' + address);
+
+    // UPDATE ADDRESS DISPLAY AND STORAGE FIELDS
+    $(".address-display").html(address);
+    $("#address-storage").attr("value", address); // NOTE - consider removing        
+
+    // GET THE ROUTE TO DESTINATION 
+    let destination = params.get("to");
+    if (typeof destination == "undefined") {
+        destination = "6299a06cd8258300049a1a1a"; // our agentId
+    }
+    // IT'S possible that we should query with the source site name here to ensure safety
+    $("#destination-storage").attr("value", destination);
+    $("#agent-id-storage").attr("value", destination);
+
+    // HIDE UNUSED LOADERS
+    $("#market-analysis-loader").show();
+    // $('#updating-home-details-loader').removeClass('hide');
+    $('#updating-home-details-loader').hide();
+    
+    validateAddress(address, rerouteAfterValidation); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+
+    // history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
+    setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
+});    
+
+// $(document).ready(function () {
+//     let queryString = window.location.search;
+//     console.log(queryString);
+//     let params = new URLSearchParams(queryString);
+//     console.log(params);
+
+//     // STORE THE VISITOR TYPE (buyer vs. seller vs. seller-buyer)
+//     let visitorType = params.get("visitor");
+//     $("#visitor-type-storage").attr("value", visitorType);
+//     console.log('Here is the visitor type: ' + visitorType);
+
+//     let address;
+//     if (visitorType == "buyer") {
+//         // CITY / STATE (GENERALLY FOR BUYERS)
+//         let city = params.get("city"); // either do this or just pull from the page path
+//         let state = params.get("state");
+//         $("#city-storage").attr("value", city);
+//         $("#state-storage").attr("value", state);
+//         console.log('Here are city, state: ' + city + ' ' + state);
+//     } else {        
+//         // NOTE that there should be no "address" for buyers (maybe just sellers initially)
+//         address = params.get("address");
+//         console.log('Here is the address: ' + address);
+    
+//         // UPDATE ADDRESS DISPLAY AND STORAGE FIELDS
+//         $(".address-display").html(address);
+//         $("#address-storage").attr("value", address); // NOTE - consider removing    
+//     } 
+
+//     // GET THE ROUTE TO DESTINATION 
+//     let destination = params.get("to");
+//     if (typeof destination == "undefined") {
+//         destination = "6299a06cd8258300049a1a1a"; // our agentId
+//     }
+//     // IT'S possible that we should query with the source site name here to ensure safety
+//     $("#destination-storage").attr("value", destination);
+//     $("#agent-id-storage").attr("value", destination);
+
+//     // HIDE UNUSED LOADERS
+//     $("#market-analysis-loader").show();
+//     // $('#updating-home-details-loader').removeClass('hide');
+//     $('#updating-home-details-loader').hide();
+
+//     if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
+//         validateAddress(address, rerouteAfterValidation); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+//         $("#seller-form").show();
+//     } else if (visitorType == "buyer") { // the problem here is that without validateAddress, we don't call getPropertyInfo then pull a sessionId
+//         setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
+//         // $("#buyer-form").show(); // EDIT - REROUTE TO CITY PAGE
+//     } else if (address) {
+//         validateAddress(address, rerouteAfterValidation); // DEFAULT BEHAVIOR if given an address? Proceed to seller form?
+//     } else {
+//         // SHOW SOME CATCHALL? PROMPT FOR ADDRESS?
+//         validateAddress(address, rerouteAfterValidation); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+//         console.log("Don't have an address and don't know the visitorType");
+//     }
+
+//     // history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
+//     setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
+// });
+
+</script>

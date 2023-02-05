@@ -46,7 +46,11 @@ $(document).ready(function () {
     console.log('Here is the visitor type: ' + visitorType);
 
     // IT'S possible that we should query with the source site name here to ensure safety
-    let destination = "6299a06cd8258300049a1a1a"; // our agentId
+    let destination = params.get("to");
+    console.log('Got destination from queryString "to": ' + destination);
+    if (typeof destination == "undefined") {
+        destination = "6299a06cd8258300049a1a1a"; // our agentId
+    }
     $("#destination-storage").attr("value", destination);
     $("#agent-id-storage").attr("value", destination);
 
@@ -77,6 +81,21 @@ $(document).ready(function () {
     // history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
     setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
 });
+
+function proceedAfterAddressValidated(result) {
+    let address = result.addressTextModified
+    console.log('Proceeding after ADDRESS VALIDATION');
+    // REQUEST PROPERTY INFO FROM BACKEND
+    let agentId = $("#agent-id-storage").val();
+    pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
+
+    $("#zip-code-page").hide();
+    $("#condo-unit-page").hide(); // may have never gotten here
+    $("#confirm-unit-page").hide(); // may have never gotten here
+    $("#enter-different-unit-page").hide(); // may have never gotten here
+    $("#invalid-address-page").hide(); // for good measure(?)
+    $("#relationship-page").show();
+}
 
 function getSingleRadioSelection(name) {
     /* GET the selected value of a single radio element */
