@@ -143,7 +143,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         
         // GET THE ROUTE TO DESTINATION 
-        let dest = params.get("to");
+        let dest = urlParams.get("to");
         console.log('Got dest: ' + dest);
         if (typeof dest == "undefined") {
             dest = "6299a06cd8258300049a1a1a"; // our agentId
