@@ -61,6 +61,7 @@ $(document).ready(function () {
     $('#updating-home-details-loader').hide();
 
     if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
+        console.log('Got visitorType ' + visitorType + ' so should be showing the #seller-form');
         $("#seller-form").show();
         if (typeof validated == "undefined" || !validated) {
             console.log('Address not previously validated, so validating now...');
