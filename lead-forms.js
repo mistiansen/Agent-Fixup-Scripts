@@ -63,8 +63,10 @@ $(document).ready(function () {
     if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
         $("#seller-form").show();
         if (typeof validated == "undefined" || !validated) {
+            console.log('Address not previously validated, so validating now...');
             validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
         } else {
+            console.log('Address was previously validated, so pullPropertyInfo');
             pullPropertyInfo(address, destination); // alternatively, we could do this in the address valdation endpoint
         }
     } else if (visitorType == "buyer") { // the problem here is that without validateAddress, we don't call getPropertyInfo then pull a sessionId
@@ -84,18 +86,20 @@ $(document).ready(function () {
 });
 
 function proceedAfterAddressValidated(result) {
-    let address = result.addressTextModified
+    console.log('In proceedAfterAddressValidated...');
+    let address = result.addressTextModified;
     // REQUEST PROPERTY INFO FROM BACKEND
     let agentId = $("#agent-id-storage").val();
     console.log('Proceeding after ADDRESS VALIDATION with agentId ' + agentId);
     pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
 
+    $("#relationship-page").show();
+    console.log('Should have just shown relationship-page');
     $("#zip-code-page").hide();
     $("#condo-unit-page").hide(); // may have never gotten here
     $("#confirm-unit-page").hide(); // may have never gotten here
     $("#enter-different-unit-page").hide(); // may have never gotten here
     $("#invalid-address-page").hide(); // for good measure(?)
-    $("#relationship-page").show();
 }
 
 function getSingleRadioSelection(name) {
