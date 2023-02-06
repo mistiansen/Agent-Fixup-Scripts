@@ -48,7 +48,8 @@ $(document).ready(function () {
     // IT'S possible that we should query with the source site name here to ensure safety
     let destination = params.get("to");
     console.log('Got destination from queryString "to": ' + destination);
-    if (typeof destination == "undefined") {
+    if (!destination) {
+        // if (typeof destination == "undefined" || destination == "") {
         destination = "6299a06cd8258300049a1a1a"; // our agentId
     }
     $("#destination-storage").attr("value", destination);
@@ -84,9 +85,9 @@ $(document).ready(function () {
 
 function proceedAfterAddressValidated(result) {
     let address = result.addressTextModified
-    console.log('Proceeding after ADDRESS VALIDATION');
     // REQUEST PROPERTY INFO FROM BACKEND
     let agentId = $("#agent-id-storage").val();
+    console.log('Proceeding after ADDRESS VALIDATION with agentId ' + agentId);
     pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
 
     $("#zip-code-page").hide();
