@@ -1,3 +1,6 @@
+let backendPath = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod";
+// let backendPath = "https://1snwvce58a.execute-api.us-east-1.amazonaws.com/dev";
+
 function addUnit(address, unit) {
     if (typeof unit != "undefined" && unit.length > 0) {
         let addressTokens = address.split(',');
