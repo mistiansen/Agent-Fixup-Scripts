@@ -69,6 +69,10 @@ function validateAddress(address, validationCallback) {
         console.log('Validation result ' + result);
         console.log('Invalid address? ' + result.invalidAddress);
         console.log('Submitted address ' + result.submittedAddress);
+
+        $('#validating-location-loader').hide();
+        // $('#validating-location-loader').css('display', 'none');
+
         $('#updating-home-details-loader').hide()
         // $('#updating-home-details-loader').css('display', 'flex');
         $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
@@ -84,11 +88,13 @@ function validateAddress(address, validationCallback) {
                 // proceedAfterAddressValidated(result.addressTextModified);
                 postValidation(function () { validationCallback(result) });
             } else if (result.invalidZip) {
+                console.log('Looks like an invalid zip or no zip provided');
                 let addressDisplayText = address;
                 $(".address-display").html(addressDisplayText);
                 $("#address-storage").attr("value", addressDisplayText);
                 $("#invalid-address-page").hide();
                 $("#zip-code-page").show();
+                // $('#validating-location-loader').hide();
             } else if ((result.needUnit && !result.unitProvided)) {
                 console.log('We need a unit and it looks like NO unit was provided');
                 let addressDisplayText = result.addressTextModified;
@@ -98,6 +104,7 @@ function validateAddress(address, validationCallback) {
                 $("#zip-code-page").hide();
                 $("#invalid-address-page").hide();
                 $("#condo-unit-page").show();
+                // $('#validating-location-loader').hide();
             } else if ((result.needUnit && result.invalidUnit)) {
                 console.log('We need a unit and it looks an invalid one was provided');
                 let addressDisplayText = result.addressTextModified;
@@ -118,12 +125,14 @@ function validateAddress(address, validationCallback) {
                     $("#invalid-address-page").hide();
                     $("#condo-unit-page").hide();
                     $("#confirm-unit-page").show();
+                    // $('#validating-location-loader').hide();
                 }
             } else {
                 console.log('Invalid address...deciding what to do next');
                 $("#zip-code-page").hide();
                 $("#condo-unit-page").hide();
                 $("#invalid-address-page").show();
+                // $('#validating-location-loader').hide();
                 let errorMessage = 'We were unable to validate that address';
                 if (result.extraneousUnitProvided) {
                     errorMessage = 'Did you mean to submit a unit number?';
@@ -167,88 +176,92 @@ function validateAddress(address, validationCallback) {
 //     });
 // }
 
-document.getElementById("no-unit-btn").addEventListener('click', (event) => {
-    console.log('Just clicked no unit btn');
-    console.log('Progressing without re-validating the no-unit address');
-    $("#unit-storage").attr("value", ""); // NOTE - NEW ADDED 12/19/22
-    $(".unit-display").html(""); // NOTE - NEW ADDED 01/04/22
-    $("#condo-unit-page").hide();
-    $("#relationship-page").show(); // NOTE - NEW ADDED 01/04/22; previously (and still) handled by a Webflow legacy interaction
-});
 
-document.getElementById("unit-submit-btn").addEventListener('click', (event) => {
-    // STORE UNIT
-    let unit = document.getElementById("unit-input").value.trim();
-    $("#unit-storage").attr("value", unit); // NOTE - NEW ADDED 12/19/22
-    $(".unit-display").html(unit); // NOTE - NEW ADDED 01/04/22
-    console.log('User entered unit: ' + unit);
 
-    // UPDATE ADDRESS
-    console.log('Adding unit to address : ' + unit);
-    let address = $("#address-storage").val();
-    console.log('Adding to address from storage: ' + address);
 
-    let unitAddress = addUnit(address, unit);
-    console.log('Now validating the address with the unit added: ' + unitAddress);
 
-    // SHOW LOADER
-    $('#updating-home-details-loader').removeClass('hide');
+// document.getElementById("no-unit-btn").addEventListener('click', (event) => {
+//     console.log('Just clicked no unit btn');
+//     console.log('Progressing without re-validating the no-unit address');
+//     $("#unit-storage").attr("value", ""); // NOTE - NEW ADDED 12/19/22
+//     $(".unit-display").html(""); // NOTE - NEW ADDED 01/04/22
+//     $("#condo-unit-page").hide();
+//     $("#relationship-page").show(); // NOTE - NEW ADDED 01/04/22; previously (and still) handled by a Webflow legacy interaction
+// });
 
-    // VALIDATE ADDRESS
-    validateAddress(unitAddress); // don't set condo (false), because already did on first pull
-});
+// document.getElementById("unit-submit-btn").addEventListener('click', (event) => {
+//     // STORE UNIT
+//     let unit = document.getElementById("unit-input").value.trim();
+//     $("#unit-storage").attr("value", unit); // NOTE - NEW ADDED 12/19/22
+//     $(".unit-display").html(unit); // NOTE - NEW ADDED 01/04/22
+//     console.log('User entered unit: ' + unit);
 
-document.getElementById("unit-correction-submit-btn").addEventListener('click', (event) => {
-    // STORE UNIT
-    let unit = document.getElementById("unit-correction-input").value.trim();
-    $("#unit-storage").attr("value", unit); // NOTE - NEW ADDED 12/19/22
-    $(".unit-display").html(unit); // NOTE - NEW ADDED 01/04/22
-    console.log('User entered unit: ' + unit);
+//     // UPDATE ADDRESS
+//     console.log('Adding unit to address : ' + unit);
+//     let address = $("#address-storage").val();
+//     console.log('Adding to address from storage: ' + address);
 
-    // UPDATE ADDRESS
-    console.log('Adding unit to address : ' + unit);
-    // let address = $("#address-storage").val();
-    // console.log('Adding to address from storage: ' + address);
-    let street = $("#street-storage").val(); // NEW 1/4/2022 - these should all be set during the initial address validation attempt
-    let city = $("#city-storage").val();
-    let state = $("#state-storage").val();
-    let zip = $("#zip-storage").val();
+//     let unitAddress = addUnit(address, unit);
+//     console.log('Now validating the address with the unit added: ' + unitAddress);
 
-    // let unitAddress = addUnit(address, unit);
-    let unitAddress = formUnitAddressString(street, unit, city, state, zip);
+//     // SHOW LOADER
+//     $('#updating-home-details-loader').removeClass('hide');
 
-    // SHOW LOADER
-    $('#updating-home-details-loader').removeClass('hide');
+//     // VALIDATE ADDRESS
+//     validateAddress(unitAddress); // don't set condo (false), because already did on first pull
+// });
 
-    // VALIDATE ADDRESS
-    validateAddress(unitAddress); // don't set condo (false), because already did on first pull
-});
+// document.getElementById("unit-correction-submit-btn").addEventListener('click', (event) => {
+//     // STORE UNIT
+//     let unit = document.getElementById("unit-correction-input").value.trim();
+//     $("#unit-storage").attr("value", unit); // NOTE - NEW ADDED 12/19/22
+//     $(".unit-display").html(unit); // NOTE - NEW ADDED 01/04/22
+//     console.log('User entered unit: ' + unit);
 
-document.getElementById("unit-is-correct-btn").addEventListener('click', (event) => {
-    // PRETEND LIKE THE ADDRESS WAS VALIDATED
-    let address = $("#address-storage").val();
-    proceedAfterAddressValidated(address);
-});
+//     // UPDATE ADDRESS
+//     console.log('Adding unit to address : ' + unit);
+//     // let address = $("#address-storage").val();
+//     // console.log('Adding to address from storage: ' + address);
+//     let street = $("#street-storage").val(); // NEW 1/4/2022 - these should all be set during the initial address validation attempt
+//     let city = $("#city-storage").val();
+//     let state = $("#state-storage").val();
+//     let zip = $("#zip-storage").val();
 
-document.getElementById("new-unit-needed-btn").addEventListener('click', (event) => {
-    $("#confirm-unit-page").hide();
-    $("#relationship-page").hide(); // NOT sure why this is needed, but looks like it is
-    $("#enter-different-unit-page").show();
-});
+//     // let unitAddress = addUnit(address, unit);
+//     let unitAddress = formUnitAddressString(street, unit, city, state, zip);
 
-document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
-    let zipCode = document.getElementById("zip-code-input").value.trim();
-    $("#zip-storage").attr("value", zipCode); // NOTE - NEW ADDED 1/4/2022 (not sure it's necessary)
+//     // SHOW LOADER
+//     $('#updating-home-details-loader').removeClass('hide');
 
-    let address = $("#address-storage").val();
-    console.log('Adding to address from storage: ' + address);
+//     // VALIDATE ADDRESS
+//     validateAddress(unitAddress); // don't set condo (false), because already did on first pull
+// });
 
-    let zipCodeAddress = addZipCode(address, zipCode);
+// document.getElementById("unit-is-correct-btn").addEventListener('click', (event) => {
+//     // PRETEND LIKE THE ADDRESS WAS VALIDATED
+//     let address = $("#address-storage").val();
+//     proceedAfterAddressValidated(address);
+// });
 
-    // SHOW LOADER
-    $('#updating-home-details-loader').removeClass('hide');
+// document.getElementById("new-unit-needed-btn").addEventListener('click', (event) => {
+//     $("#confirm-unit-page").hide();
+//     $("#relationship-page").hide(); // NOT sure why this is needed, but looks like it is
+//     $("#enter-different-unit-page").show();
+// });
 
-    // VALIDATE ADDRESS
-    validateAddress(zipCodeAddress); // should overwrite any invalid address items
-    setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
-});
+// document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
+//     let zipCode = document.getElementById("zip-code-input").value.trim();
+//     $("#zip-storage").attr("value", zipCode); // NOTE - NEW ADDED 1/4/2022 (not sure it's necessary)
+
+//     let address = $("#address-storage").val();
+//     console.log('Adding to address from storage: ' + address);
+
+//     let zipCodeAddress = addZipCode(address, zipCode);
+
+//     // SHOW LOADER
+//     $('#updating-home-details-loader').removeClass('hide');
+
+//     // VALIDATE ADDRESS
+//     validateAddress(zipCodeAddress); // should overwrite any invalid address items
+//     setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
+// });
