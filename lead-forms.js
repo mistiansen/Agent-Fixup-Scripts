@@ -93,6 +93,8 @@ function proceedAfterAddressValidated(result) {
     console.log('Proceeding after ADDRESS VALIDATION with agentId ' + agentId);
     pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
 
+    $("#seller-form").show();
+    console.log('Should have just shown seller-form');
     $("#relationship-page").show();
     console.log('Should have just shown relationship-page');
     $("#zip-code-page").hide();
