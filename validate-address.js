@@ -64,7 +64,7 @@ function validateAddress(address, validationCallback) {
         url: url,
         method: 'POST',
         // data: JSON.stringify({ "address": address }), // data: JSON.stringify(sellingDetails),
-        data: JSON.stringify({ "address": address }), // data: JSON.stringify(sellingDetails),
+        data: JSON.stringify({ "address": address, "validateCity": true }), // data: JSON.stringify(sellingDetails),
     }).done(function (result) {
         console.log('Validation result ' + result);
         console.log('Invalid address? ' + result.invalidAddress);
