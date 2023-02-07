@@ -15,7 +15,8 @@ function setBuyerSessionId() {
     return sessionId;
 }
 
-$(document).ready(function () {
+// $(document).ready(function () { // scripts may not be loaded yet
+$(window).load(function () {
     let queryString = window.location.search;
     console.log(queryString);
     let params = new URLSearchParams(queryString);
