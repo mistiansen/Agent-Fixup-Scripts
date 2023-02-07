@@ -1,6 +1,3 @@
-let backendPath = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod";
-// let backendPath = "https://1snwvce58a.execute-api.us-east-1.amazonaws.com/dev";
-
 function addUnit(address, unit) {
     if (typeof unit != "undefined" && unit.length > 0) {
         let addressTokens = address.split(',');
@@ -75,7 +72,8 @@ function postValidation(func) {
 // function validateAddress(address) {
 function validateAddress(address, validationCallback) {
     console.log('About to validate address: ' + address);
-    let url = backendPath + "/address";
+    let url = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/address";
+    // let url = "https://1snwvce58a.execute-api.us-east-1.amazonaws.com/dev/address";
     $.ajax({
         url: url,
         method: 'POST',
