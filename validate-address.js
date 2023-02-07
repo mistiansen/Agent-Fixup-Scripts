@@ -47,9 +47,24 @@ function storeValidatedAddressComponents(validationResult) {
     $("#zip-storage").attr("value", validationResult.zip);
 
     // ADDED 1/29/2023 - USE CITY ID
-    let cityId = validationResult.cityId;
-    console.log('Pulled CITY ID from validation result: ' + cityId);
-    $("#city-id-storage").attr("value", cityId); // store our city-id / slug corresponding to the city collection page
+    // let cityId = validationResult.cityId;
+    // console.log('Pulled CITY ID from validation result: ' + cityId);
+    // $("#city-id-storage").attr("value", cityId); // store our city-id / slug corresponding to the city collection page
+    console.log('SUPPORT CITY CHECK: ' + validationResult.supportedCity);
+    console.log('SUPPORTED CITY ID: ' + validationResult.cityId);
+    if (validationResult.supportedCity && validationResult.cityId) {
+        console.log('IS SUPPORTED!');
+        $("#city-id-storage").attr("value", validationResult.cityId);
+    } else {
+        console.log('NOT SUPPORTED!!!');
+        let closestCityInfo = validationResult.closestSupportedCity;
+        let closestCityId = closestCityInfo.closestCityId;
+        if (closestCityId) {
+            console.log('Found nearest supported city: ' + closestCityId);
+            $("#city-id-storage").attr("value", closestCityId);
+        }
+    }
+
 }
 
 function postValidation(func) {
@@ -78,6 +93,22 @@ function validateAddress(address, validationCallback) {
         $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
         try {
             storeValidatedAddressComponents(result); // NEW 1/4/2022 - this would ALWAYS run, so elements SHOULD be safely overridden
+
+            // console.log('SUPPORT CITY CHECK: ' + result.supportedCity);
+            // console.log('SUPPORTED CITY ID: ' + result.cityId);
+            // if (result.supportedCity && result.cityId) {
+            //     console.log('IS SUPPORTED!');
+            //     $("#city-id-storage").attr("value", result.cityId);
+            // } else {
+            //     console.log('NOT SUPPORTED!!!');
+            //     let closestCityInfo = result.closestSupportedCity;
+            //     let closestCityId = closestCityInfo.closestCityId;
+            //     if (closestCityId) {
+            //         console.log('Found nearest supported city: ' + closestCityId);
+            //         $("#city-id-storage").attr("value", closestCityId);
+            //     }
+            // }
+
             if (!result.invalidAddress) {
                 console.log('Looks like it was a valid address');
                 // REQUEST PROPERTY INFO FROM BACKEND
