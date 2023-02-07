@@ -16,7 +16,7 @@ function setBuyerSessionId() {
 }
 
 // $(document).ready(function () { // scripts may not be loaded yet
-$(window).load(function () {
+$(window).on('load', function () {
     let queryString = window.location.search;
     console.log(queryString);
     let params = new URLSearchParams(queryString);
