@@ -60,6 +60,7 @@ $(window).on('load', function () {
     $("#market-analysis-loader").show();
     // $('#updating-home-details-loader').removeClass('hide');
     $('#updating-home-details-loader').hide();
+    $('#validating-location-loader').hide();
 
     if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
         console.log('Got visitorType ' + visitorType + ' so should be showing the #seller-form');
