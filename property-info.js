@@ -1,6 +1,3 @@
-let backendPath = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod";
-// let backendPath = "https://1snwvce58a.execute-api.us-east-1.amazonaws.com/dev";
-
 var formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -76,7 +73,8 @@ function pullPropertyInfo(address, agentId) {
     }
 
     console.log('Pulling property info for ' + address);
-    let url = backendPath + "/property";
+    let url = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/property";
+    // let url = "https://1snwvce58a.execute-api.us-east-1.amazonaws.com/dev/property";
     $.ajax({
         url: url,
         method: 'POST',
