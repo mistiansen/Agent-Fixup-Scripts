@@ -58,10 +58,11 @@ function storeValidatedAddressComponents(validationResult) {
     } else {
         console.log('NOT SUPPORTED!!!');
         let closestCityInfo = validationResult.closestSupportedCity;
-        let closestCityId = closestCityInfo.closestCityId;
-        if (closestCityId) {
-            console.log('Found nearest supported city: ' + closestCityId);
+        if (closestCityInfo) {
+            console.log('But do have the closest supported city' + closestCityInfo);
+            let closestCityId = closestCityInfo.closestCityId;
             $("#city-id-storage").attr("value", closestCityId);
+            console.log('Found nearest supported city: ' + closestCityId);
         }
     }
 
