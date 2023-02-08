@@ -34,13 +34,6 @@ $(window).on('load', function () {
     $(".address-display").html(address);
     $("#address-storage").attr("value", address); // NOTE - consider removing    
 
-    // CITY / STATE (GENERALLY FOR BUYERS)
-    let city = params.get("city"); // either do this or just pull from the page path
-    let state = params.get("state");
-    $("#city-storage").attr("value", city);
-    $("#state-storage").attr("value", state);
-    console.log('Here are city, state: ' + city + ' ' + state);
-
     // STORE THE VISITOR TYPE (buyer vs. seller vs. seller-buyer)
     let visitorType = params.get("visitor");
     $("#visitor-type-storage").attr("value", visitorType);
@@ -172,8 +165,8 @@ function getSellerSessionInfo() {
 function getBuyerSessionInfo() {
     let sessionInfo = getGeneralSessionInfo();
 
-    let city = $("#city-storage").val();
-    let state = $("#state-storage").val();
+    let city = $("#city-storage").val(); // NOTE - these values are set in WEBFLOW EMBED from the collection item info
+    let state = $("#state-storage").val(); // NOTE - these values are set in WEBFLOW EMBED from the collection item info
     sessionInfo['Buying-City'] = city;
     sessionInfo['Buying-State'] = state;
 
