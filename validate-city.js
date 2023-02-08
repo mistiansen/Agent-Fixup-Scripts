@@ -5,16 +5,12 @@ function postValidation(func) {
 
 // async function validateCity(city, state, validationCallback) {
 async function validateCity(city) {
-    console.log('About to validate city, state: ' + city);
-
-    let lat = $("#lat-storage").val();
-    let lng = $("#lng-storage").val();
-    console.log('Need to find closest city to: ' + lat + ' ' + lng);
+    console.log('About to validate city' + city);
+    let toPath;
     try {
         let req = await $.ajax({
             url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
             method: 'POST',
-            // data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt, 'lat': lat, 'lng': lng }),
             // data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt }),
             data: JSON.stringify({ 'city': city }),
         })
@@ -24,7 +20,6 @@ async function validateCity(city) {
             let closestCityId = result.closest_city_id;
             console.log('Successfully found the closest city: ' + closestCityId);
             toPath = "cities/" + closestCityId;
-            queryString = '?city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state);
         });
 
         req.fail(function () {
@@ -42,4 +37,6 @@ async function validateCity(city) {
         toPath = "locate";
         console.log('After setting toPath in fail');
     }
+    console.log('About to return path: ' + toPath);
+    return toPath;
 }
