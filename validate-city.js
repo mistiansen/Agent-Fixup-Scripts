@@ -8,15 +8,14 @@ async function validateCity(city) {
     console.log('About to validate city' + city);
     let toPath;
     try {
-        let req = await $.ajax({
+        // let req = await $.ajax({
+        // let req = $.ajax({
+        $.ajax({
             url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
             method: 'POST',
             // data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt }),
             data: JSON.stringify({ 'city': city }),
-        })
-
-        // FINE FOR BUYERS AND SELLERS (unless we end up wanting to remove address validation from lead-forms.js)
-        req.success(function (result) {
+        }).done(function (result) {
             let cityId;
             console.log(result);
             console.log('SUPPORT CITY CHECK: ' + result.supportedCity);
@@ -40,12 +39,12 @@ async function validateCity(city) {
             console.log('Returning this path with cityId: ' + toPath);
         });
 
-        req.fail(function () {
-            console.log('In validateCity req.fail');
-            toPath = "city"; // 2-8-2023 new validate city page
-            console.log('After setting toPath in fail');
-            // toPath = "city?city=" + city; // 2-8-2023 new validate city page
-        });
+        // req.fail(function () {
+        //     console.log('In validateCity req.fail');
+        //     toPath = "city"; // 2-8-2023 new validate city page
+        //     console.log('After setting toPath in fail');
+        //     // toPath = "city?city=" + city; // 2-8-2023 new validate city page
+        // });
 
     } catch (error) {
         console.log('(Caught error, not fail): Unable to find closest city' + error);
