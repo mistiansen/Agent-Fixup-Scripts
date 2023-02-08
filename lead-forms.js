@@ -42,7 +42,7 @@ $(window).on('load', function () {
     // IT'S possible that we should query with the source site name here to ensure safety
     let destination = params.get("to");
     console.log('Got destination from queryString "to": ' + destination);
-    if (!destination) {
+    if (!destination || typeof destination == "undefined" || destination == "") {
         // if (typeof destination == "undefined" || destination == "") {        
         destination = "6299a06cd8258300049a1a1a"; // our agentId
         console.log('Did not have a "to" destination, so set to default: ' + destination);
