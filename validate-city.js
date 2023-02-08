@@ -44,11 +44,13 @@ async function validateCity(city) {
             console.log('In validateCity req.fail');
             toPath = "city"; // 2-8-2023 new validate city page
             console.log('After setting toPath in fail');
+            // toPath = "city?city=" + city; // 2-8-2023 new validate city page
         });
 
     } catch (error) {
         console.log('(Caught error, not fail): Unable to find closest city' + error);
         toPath = "city"; // 2-8-2023 new validate city page
+        // toPath = "city?city=" + city; // 2-8-2023 new validate city page
     }
     console.log('About to return path: ' + toPath);
     return toPath;
