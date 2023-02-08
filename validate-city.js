@@ -41,19 +41,14 @@ async function validateCity(city) {
         });
 
         req.fail(function () {
-            console.log('Oh noes!');
-            console.log('Unabled to find closest city');
-            // toPath = "cities/locate";
-            toPath = "locate";
+            console.log('In validateCity req.fail');
+            toPath = "city"; // 2-8-2023 new validate city page
             console.log('After setting toPath in fail');
         });
 
     } catch (error) {
-        console.log('Oh noes!');
-        console.log('Unabled to find closest city');
-        // toPath = "cities/locate";
-        toPath = "locate";
-        console.log('After setting toPath in fail');
+        console.log('(Caught error, not fail): Unable to find closest city' + error);
+        toPath = "city"; // 2-8-2023 new validate city page
     }
     console.log('About to return path: ' + toPath);
     return toPath;
