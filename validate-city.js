@@ -10,7 +10,7 @@ async function validateCity(city) {
     try {
         // let req = await $.ajax({
         // let req = $.ajax({
-        $.ajax({
+        await $.ajax({
             url: 'https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/city',
             method: 'POST',
             // data: JSON.stringify({ 'cityId': cityId, 'stateId': stateFmt }),
