@@ -22,6 +22,7 @@ async function validateCity(city) {
             console.log('SUPPORTED CITY ID: ' + result.cityId);
             if (result.supportedCity && result.cityId) {
                 cityId = result.cityId;
+                toPath = "cities/" + cityId;
                 console.log('IS SUPPORTED!');
                 // $("#city-id-storage").attr("value", result.cityId);
             } else {
@@ -31,12 +32,13 @@ async function validateCity(city) {
                     console.log('But do have the closest supported city' + closestCityInfo);
                     let closestCityId = closestCityInfo.closestCityId;
                     console.log('Found nearest supported city: ' + closestCityId);
-                    cityId = closestCityId;
+                    toPath = "cities/" + closestCityId;
                     // $("#city-id-storage").attr("value", closestCityId);
+                } else {
+                    console.log("Not a supported city and do not have closest city info");
+                    toPath = "city";
                 }
             }
-            toPath = "cities/" + cityId;
-            console.log('Returning this path with cityId: ' + toPath);
         });
 
         // req.fail(function () {
