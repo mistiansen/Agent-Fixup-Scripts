@@ -56,7 +56,8 @@ $(window).on('load', function () {
     $('#updating-home-details-loader').hide();
     $('#validating-location-loader').hide();
 
-    if (typeof address == "undefined" || address == "null") {
+    if (visitorType == "buyer" || typeof address == "undefined" || address == "null" || !address) {
+        console.log('Should be showing the buyer form');
         // WE COULD CHECK WHETHER VALIDATED, BUT WE SHOULD NEVER GET TO BUYER PAGE WITHOUT A PROPER CITY, I THINK
         setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
         $("#buyer-form").show();
