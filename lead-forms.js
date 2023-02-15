@@ -39,6 +39,11 @@ $(window).on('load', function () {
     $("#visitor-type-storage").attr("value", visitorType);
     console.log('Here is the visitor type: ' + visitorType);
 
+    // STORE THE VISITOR TYPE (buyer vs. seller vs. seller-buyer)
+    let sessionId = params.get("session");
+    $("#session-id-storage").attr("value", sessionId);
+    console.log('Here is the carried sessionId: ' + sessionId);
+
     // IT'S possible that we should query with the source site name here to ensure safety
     let destination = params.get("to");
     console.log('Got destination from queryString "to": ' + destination);
