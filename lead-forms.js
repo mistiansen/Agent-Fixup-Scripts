@@ -360,6 +360,7 @@ function mobileCheck() {
 };
 
 function handleBounce() {
+    let backendPath = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod";
     let finished = $("#finished").val(); // has a value if already bounced or reached report
     if (!finished) { // but if they bounce very early, this won't work. It will attempt to update the session.         
         let visitorType = $("#visitor-type-storage").val();
