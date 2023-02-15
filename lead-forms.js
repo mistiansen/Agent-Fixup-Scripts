@@ -56,9 +56,11 @@ $(window).on('load', function () {
     $('#updating-home-details-loader').hide();
     $('#validating-location-loader').hide();
 
-    // if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
-    if ((visitorType == "seller" || visitorType == "seller-buyer")) {
-        console.log('Got visitorType ' + visitorType + ' so should be showing the #seller-form');
+    if (typeof address == "undefined" || address == "null") {
+        // WE COULD CHECK WHETHER VALIDATED, BUT WE SHOULD NEVER GET TO BUYER PAGE WITHOUT A PROPER CITY, I THINK
+        setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
+        $("#buyer-form").show();
+    } else {
         $("#seller-form").show();
         if (typeof validated == "undefined" || !validated) {
             console.log('Address not previously validated, so validating now...');
@@ -67,17 +69,31 @@ $(window).on('load', function () {
             console.log('Address was previously validated, so pullPropertyInfo');
             pullPropertyInfo(address, destination); // alternatively, we could do this in the address valdation endpoint
         }
-    } else if (visitorType == "buyer") { // the problem here is that without validateAddress, we don't call getPropertyInfo then pull a sessionId
-        // WE COULD CHECK WHETHER VALIDATED, BUT WE SHOULD NEVER GET TO BUYER PAGE WITHOUT A PROPER CITY, I THINK
-        setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
-        $("#buyer-form").show();
-    } else if (address) {
-        validateAddress(address, proceedAfterAddressValidated); // DEFAULT BEHAVIOR if given an address? Proceed to seller form?
-    } else {
-        // SHOW SOME CATCHALL? PROMPT FOR ADDRESS?
-        validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
-        console.log("Don't have an address and don't know the visitorType");
     }
+
+    // // if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
+    // // if ((visitorType == "seller" || visitorType == "seller-buyer")) {
+    // if (typeof address != "undefined" && address != "null") {
+    //     console.log('Got visitorType ' + visitorType + ' so should be showing the #seller-form');
+    //     $("#seller-form").show();
+    //     if (typeof validated == "undefined" || !validated) {
+    //         console.log('Address not previously validated, so validating now...');
+    //         validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+    //     } else {
+    //         console.log('Address was previously validated, so pullPropertyInfo');
+    //         pullPropertyInfo(address, destination); // alternatively, we could do this in the address valdation endpoint
+    //     }
+    // } else if (visitorType == "buyer") { // the problem here is that without validateAddress, we don't call getPropertyInfo then pull a sessionId
+    //     // WE COULD CHECK WHETHER VALIDATED, BUT WE SHOULD NEVER GET TO BUYER PAGE WITHOUT A PROPER CITY, I THINK
+    //     setBuyerSessionId(); // we aren't validating an address or pulling property info, so there is no sessionId from the backend
+    //     $("#buyer-form").show();
+    // } else if (address) {
+    //     validateAddress(address, proceedAfterAddressValidated); // DEFAULT BEHAVIOR if given an address? Proceed to seller form?
+    // } else {
+    //     // SHOW SOME CATCHALL? PROMPT FOR ADDRESS?
+    //     validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+    //     console.log("Don't have an address and don't know the visitorType");
+    // }
 
     // history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
     setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500);
