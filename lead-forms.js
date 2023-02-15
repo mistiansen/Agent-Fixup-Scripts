@@ -66,6 +66,7 @@ $(window).on('load', function () {
             console.log('Address not previously validated, so validating now...');
             validateAddress(address, proceedAfterAddressValidated); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
         } else {
+            $("#relationship-page").show();
             console.log('Address was previously validated, so pullPropertyInfo');
             pullPropertyInfo(address, destination); // alternatively, we could do this in the address valdation endpoint
         }
