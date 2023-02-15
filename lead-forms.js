@@ -56,7 +56,8 @@ $(window).on('load', function () {
     $('#updating-home-details-loader').hide();
     $('#validating-location-loader').hide();
 
-    if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
+    // if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
+    if ((visitorType == "seller" || visitorType == "seller-buyer")) {
         console.log('Got visitorType ' + visitorType + ' so should be showing the #seller-form');
         $("#seller-form").show();
         if (typeof validated == "undefined" || !validated) {
