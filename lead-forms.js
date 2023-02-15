@@ -97,7 +97,7 @@ $(window).on('load', function () {
     // }
 
     // history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
-    // setTimeout(function () { $("#market-analysis-loader").hide(); }, 2500); // UNCOMMENT TO SHOW INITIAL LOADER
+    setTimeout(function () { $("#market-analysis-loader").hide(); }, 1500); // UNCOMMENT TO SHOW INITIAL LOADER
 });
 
 function proceedAfterAddressValidated(result) {
