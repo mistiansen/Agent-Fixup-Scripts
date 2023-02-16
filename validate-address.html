@@ -1,0 +1,274 @@
+<script>
+    let addressInput = 'address-correction-input';
+    var placeSearch, autocomplete;
+    function initAutocomplete() {
+      var input = document.getElementById(addressInput);
+      autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.setComponentRestrictions({ 'country': ['us'] });
+      autocomplete.addListener('place_changed', fillInAddress);
+    }
+    function fillInAddress() {
+      var place = autocomplete.getPlace();   
+      if (typeof place.formatted_address != "undefined") {
+        document.getElementById(addressInput).value = place.formatted_address;    
+        if (document.getElementById(addressInput).value !== "") {
+          document.getElementById("submit-address-correction-btn").disabled = false;
+        }        
+      }    
+    }
+  </script>
+
+<script>
+
+function reroute(cityId, address, visitorType, destination, sessionId) {    
+// function reroute(toPath, address, visitorType, destination, sessionId) {        
+    let toPath = "cities/" + cityId;
+    let queryString  = '?address=' + encodeURIComponent(address) + '&validated=true' + '&destination=' + encodeURIComponent(destination) + '&visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId);
+    let routeToPathBase = 'https://agentfixup.com/' + toPath;
+    let routeToUrl = routeToPathBase + queryString;   
+    location.href = routeToUrl; // carry the address over and don't re-validate it
+}
+
+async function rerouteAfterValidation(result) {
+    console.log('REROUTING after address validation');
+
+    let sessionId = $("#session-id-storage").val(); // agentId
+    let visitorType = $("#visitor-type-storage").val(); // agentId
+    let destination = $("#destination-storage").val(); // agentId
+    let address = $("#address-storage").val(); // house number, street, and unit (if any)
+    
+    // let cityId = $("#city-id-storage").val();
+    let cityId = result.cityId;
+
+    let toPath;
+    let isSupportedCity = result.supportedCity;
+    console.log('IS SUPPORTED CITY? ' + isSupportedCity);
+    if (typeof isSupportedCity != "undefined" && isSupportedCity) {
+        console.log('The city was valid');        
+        // toPath = "cities/" + cityId;
+        $("#city-id-storage").attr("value", cityId); // NOTE - consider removing        
+    } else {    
+        let closestCityInfo = result.closestSupportedCity;
+        let closestCityId = closestCityInfo.closestCityId;
+        if (typeof closestCityId != "undefined") {
+            console.log('Got a closest city from BACKEND' + closestCityId);
+            // toPath = "cities/" + closestCityId;
+            cityId = closestCityId;
+            $("#city-id-storage").attr("value", cityId); // NOTE - consider removing        
+        } else {
+            // NOT SURE WHAT TO DO
+            // ROUTE TO "locate" or stay here to ask for something else?
+            // toPath = "cities/locate";
+            cityId = "locate";
+        }
+    }
+
+    reroute(cityId, address, visitorType, destination, sessionId);
+    // reroute(toPath, address, visitorType, destination, sessionId);
+}    
+
+// $(document).ready(function () {
+$(window).on('load', function () {    
+    let queryString = window.location.search;
+    console.log(queryString);
+    let params = new URLSearchParams(queryString);
+    console.log(params);
+
+    // NOTE that there should be no "address" for buyers (maybe just sellers initially)
+    let address = params.get("address");
+    console.log('Here is the address: ' + address);
+
+    // GET the visitor type (but honestly it should always be "seller" or "seller-buyer")
+    let visitorType = params.get("visitor");
+    $("#visitor-type-storage").attr("value", visitorType);
+    console.log('Here is the visitor type: ' + visitorType);
+
+    // UPDATE ADDRESS DISPLAY AND STORAGE FIELDS
+    $(".address-display").html(address);
+    $("#address-storage").attr("value", address); // NOTE - consider removing        
+
+    // GET THE ROUTE TO DESTINATION 
+    let destination = params.get("to");
+    if (typeof destination == "undefined") {
+        destination = "6299a06cd8258300049a1a1a"; // our agentId
+    }
+    // IT'S possible that we should query with the source site name here to ensure safety
+    $("#destination-storage").attr("value", destination);
+    $("#agent-id-storage").attr("value", destination);
+
+    // HIDE UNUSED LOADERS
+    $("#validating-location-loader").show();
+    $('#updating-home-details-loader').hide();
+    
+    // HERE would be the only start session call; all others would update with the returned session ID
+    // validateAddress(address, rerouteAfterValidation); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+    initialAddressValidation(address, destination, rerouteAfterValidation); // THIS may be for both seller and seller-buyer, but the logic will eventually deviate based on type
+
+    // history.replaceState({}, null, "agents"); // UNCOMMENT TO HIDE QUERY STRING
+    setTimeout(function () { $("#validating-location-loader").hide(); }, 2500);
+});    
+
+
+document.getElementById("no-unit-btn").addEventListener('click', (event) => {
+    console.log('Just clicked no unit btn');
+    console.log('Progressing without re-validating the no-unit address');
+    $("#unit-storage").attr("value", ""); // NOTE - NEW ADDED 12/19/22
+    $(".unit-display").html(""); // NOTE - NEW ADDED 01/04/22
+    $("#condo-unit-page").hide(); // ADDED 2-7-2023 - NEED TO REROUTE FROM HERE
+
+    // SHOW LOADER
+    $('#validating-location-loader').removeClass('hide');
+    $('#validating-location-loader').css('display', 'flex');    
+    
+    // PULL COMPONTENTS FROM STORAGE AND REROUTE REGARDLESS (at this point we should always have a cityId, at least of the closest city)
+    let cityId = $("#city-id-storage").val();
+    console.log('Pulled city id from STORAGE: ' + cityId);
+    let address = $("#address-storage").val();
+    let destination = $("#destination-storage").val(); // agentId
+    let sessionId = $("#session-id-storage").val(); // agentId
+    reroute(cityId, address, destination, sessionId);
+});
+
+document.getElementById("unit-submit-btn").addEventListener('click', (event) => {
+    // STORE UNIT
+    let unit = document.getElementById("unit-input").value.trim();
+    $("#unit-storage").attr("value", unit); // NOTE - NEW ADDED 12/19/22
+    $(".unit-display").html(unit); // NOTE - NEW ADDED 01/04/22
+    console.log('User entered unit: ' + unit);
+    
+    // UPDATE ADDRESS
+    console.log('Adding unit to address : ' + unit);
+    let address = $("#address-storage").val();
+    console.log('Adding to address from storage: ' + address);
+    
+    let unitAddress = addUnit(address, unit);
+    console.log('Now validating the address with the unit added: ' + unitAddress);
+    
+    // HIDE THE CURRENT PAGE WHILE THE LOADER SHOWS
+    $('#condo-unit-page').hide();        
+    
+    // SHOW LOADER
+    $('#validating-location-loader').removeClass('hide');
+    $('#validating-location-loader').css('display', 'flex');
+
+    let agentId = $("#destination-storage").val();
+    console.log('Got destination from storage: ' + agentId);    
+
+    let sessionId = $("#session-id-storage").val();
+    console.log('Got sessionId from storage: ' + sessionId);    
+
+    // VALIDATE ADDRESS
+    // validateAddress(unitAddress, rerouteAfterValidation); // don't set condo (false), because already did on first pull
+    correctionAddressValidation(unitAddress, agentId, sessionId, rerouteAfterValidation); // don't set condo (false), because already did on first pull
+});
+
+document.getElementById("unit-correction-submit-btn").addEventListener('click', (event) => {
+    // STORE UNIT
+    let unit = document.getElementById("unit-correction-input").value.trim();
+    $("#unit-storage").attr("value", unit); // NOTE - NEW ADDED 12/19/22
+    $(".unit-display").html(unit); // NOTE - NEW ADDED 01/04/22
+    console.log('User entered unit: ' + unit);
+
+    // UPDATE ADDRESS
+    let street = $("#street-storage").val(); // NEW 1/4/2022 - these should all be set during the initial address validation attempt
+    let city = $("#city-storage").val();
+    let state = $("#state-storage").val();
+    let zip = $("#zip-storage").val();
+
+    let unitAddress = formUnitAddressString(street, unit, city, state, zip);
+
+    // HIDE THE CURRENT PAGE WHILE THE LOADER SHOWS
+    $('#enter-different-unit-page').hide();    
+    
+    // SHOW LOADER
+    $('#validating-location-loader').removeClass('hide');
+    $('#validating-location-loader').css('display', 'flex');    
+    
+    let agentId = $("#destination-storage").val();
+    console.log('Got destination from storage: ' + agentId);    
+
+    let sessionId = $("#session-id-storage").val();
+    console.log('Got sessionId from storage: ' + sessionId);    
+
+    // VALIDATE ADDRESS
+    // validateAddress(unitAddress, rerouteAfterValidation); // don't set condo (false), because already did on first pull
+    correctionAddressValidation(unitAddress, agentId, sessionId, rerouteAfterValidation); 
+});
+
+document.getElementById("unit-is-correct-btn").addEventListener('click', (event) => {
+    // HIDE THE CURRENT PAGE WHILE THE LOADER SHOWS
+    $('#confirm-unit-page').hide();    
+    
+    // SHOW LOADER
+    $('#validating-location-loader').removeClass('hide');
+    $('#validating-location-loader').css('display', 'flex');
+
+    // PULL COMPONTENTS FROM STORAGE AND REROUTE REGARDLESS (at this point we should always have a cityId, at least of the closest city)
+    let sessionId = $("#session-id-storage").val(); 
+    let address = $("#address-storage").val();    
+    let cityId = $("#city-id-storage").val();
+    let destination = $("#destination-storage").val();
+    reroute(cityId, address, destination, sessionId);    
+});
+
+document.getElementById("new-unit-needed-btn").addEventListener('click', (event) => {
+    $("#confirm-unit-page").hide();
+    $("#enter-different-unit-page").show();
+});
+
+document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
+    let zipCode = document.getElementById("zip-code-input").value.trim();
+    $("#zip-storage").attr("value", zipCode); // NOTE - NEW ADDED 1/4/2022 (not sure it's necessary)
+
+    let address = $("#address-storage").val();
+    console.log('Adding to address from storage: ' + address);
+
+    let zipCodeAddress = addZipCode(address, zipCode);
+
+    // HIDE THE CURRENT PAGE WHILE THE LOADER SHOWS
+    $('#zip-code-page').hide();
+
+    // SHOW LOADER
+    $('#validating-location-loader').removeClass('hide');
+    $('#validating-location-loader').css('display', 'flex');
+
+    let agentId = $("#destination-storage").val();
+    console.log('Got destination from storage: ' + agentId);    
+
+    let sessionId = $("#session-id-storage").val();
+    console.log('Got sessionId from storage: ' + sessionId); 
+
+    // VALIDATE ADDRESS
+    // validateAddress(zipCodeAddress, rerouteAfterValidation); // should overwrite any invalid address items
+    correctionAddressValidation(zipCodeAddress, agentId, sessionId, rerouteAfterValidation); 
+    setTimeout(function () { $("#validating-location-loader").hide(); }, 2500);
+});
+
+document.getElementById("submit-address-correction-btn").addEventListener('click', (event) => {    
+    event.preventDefault(); // prevent webflow defaults
+    $('#submit-address-correction-btn').val("Going...");
+    
+    // HIDE THE CURRENT PAGE WHILE THE LOADER SHOWS
+    $('#invalid-address-page').hide();
+
+    // SHOW LOADER
+    // $("#validating-location-loader").show();
+    $('#validating-location-loader').removeClass('hide');
+    $('#validating-location-loader').css('display', 'flex');    
+
+    let address = document.getElementById("address-correction-input").value.trim();
+    $(".address-display").html(address); // we want to show, but not necessarily store/send 
+
+    let agentId = $("#destination-storage").val();
+    console.log('Got destination from storage: ' + agentId);    
+
+    let sessionId = $("#session-id-storage").val();
+    console.log('Got sessionId from storage: ' + sessionId);     
+
+    // RE-VALIDATE ADDRESS
+    // validateAddress(address, rerouteAfterValidation);
+    correctionAddressValidation(address, agentId, sessionId, rerouteAfterValidation); // don't set condo (false), because already did on first pull
+    setTimeout(function () { $("#validating-location-loader").hide(); }, 2000);
+});
+
+</script>
