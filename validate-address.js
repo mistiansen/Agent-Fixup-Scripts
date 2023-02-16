@@ -80,7 +80,8 @@ function correctionAddressValidation(address, agentId, sessionId, validationCall
 
 // function validateAddress(address, validationCallback, startSession, sessionId) {
 function validateAddress(request, validationCallback) {
-    console.log('About to validate address: ' + address);
+    let address = request.address;
+    console.log('About to validate address with request: ' + request);
     let url = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/address";
     $.ajax({
         url: url,
