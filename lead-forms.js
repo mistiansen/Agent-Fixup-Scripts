@@ -1,3 +1,4 @@
+let now = new Date();
 console.log('TOP OF LEAD FORM SCRIPT @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
 
 function generateSessionId(length) {
