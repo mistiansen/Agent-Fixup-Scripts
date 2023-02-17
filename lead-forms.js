@@ -17,7 +17,7 @@ function setBuyerSessionId() {
 
 // $(document).ready(function () { // scripts may not be loaded yet
 $(window).on('load', function () {
-    console.log('LEAD FORM PAGE LOAD! @' + new Date().getSeconds());
+    console.log('LEAD FORM LOAD start @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
     let queryString = window.location.search;
     console.log(queryString);
     let params = new URLSearchParams(queryString);
@@ -62,6 +62,7 @@ $(window).on('load', function () {
     $('#updating-home-details-loader').hide();
     $('#validating-location-loader').hide();
 
+    console.log('LEAD FORM before pulling property info @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
     if (visitorType == "buyer" || typeof address == "undefined" || address == "null" || !address) {
         console.log('Should be showing the buyer form');
         // WE COULD CHECK WHETHER VALIDATED, BUT WE SHOULD NEVER GET TO BUYER PAGE WITHOUT A PROPER CITY, I THINK
@@ -78,6 +79,7 @@ $(window).on('load', function () {
             pullPropertyInfo(address, destination); // alternatively, we could do this in the address valdation endpoint
         }
     }
+    console.log('LEAD FORM end @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
 
     // // if ((visitorType == "seller" || visitorType == "seller-buyer") && address) {
     // // if ((visitorType == "seller" || visitorType == "seller-buyer")) {
