@@ -17,6 +17,7 @@ function setBuyerSessionId() {
 
 // $(document).ready(function () { // scripts may not be loaded yet
 $(window).on('load', function () {
+    console.log('LEAD FORM PAGE LOAD! @' + new Date().getSeconds());
     let queryString = window.location.search;
     console.log(queryString);
     let params = new URLSearchParams(queryString);
