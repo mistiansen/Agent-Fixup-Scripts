@@ -1,3 +1,5 @@
+console.log('TOP OF LEAD FORM SCRIPT @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
+
 function generateSessionId(length) {
     let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$*.';
     let sessionId = '';
