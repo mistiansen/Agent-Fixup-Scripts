@@ -1,18 +1,8 @@
 let now = new Date();
 console.log('TOP OF LEAD FORM SCRIPT @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
 
-function generateSessionId(length) {
-    let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$*.';
-    let sessionId = '';
-    for (var i = 0; i < length; i++) {
-        sessionId += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return sessionId;
-}
-
 function setBuyerSessionId() {
-    // let sessionId = Math.random().toString(36).substr(2, 12);
-    let sessionId = generateSessionId(20);
+    let sessionId = Date.now();
     console.log('Storing sessionId ' + sessionId);
     $("#session-id-storage").attr("value", sessionId);
     return sessionId;
