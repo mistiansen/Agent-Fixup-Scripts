@@ -89,6 +89,6 @@ async function getValidCityId(cityInput) {
     } catch (error) {
         console.log('(Caught error, not fail): Unable to find closest city' + error);
     }
-    console.log('About to return path: ' + toPath);
+    console.log('About to return cityId: ' + cityId);
     return cityId;
 }
