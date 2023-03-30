@@ -40,7 +40,6 @@ function storeValidatedAddressComponents(validationResult) {
     console.log('Storing state in storage:' + validationResult.state);
     $("#city-storage").attr("value", validationResult.city);
     $("#state-storage").attr("value", validationResult.state);
-
     $("#zip-storage").attr("value", validationResult.zip);
 
     // ADDED 1/29/2023 - USE CITY ID
@@ -97,7 +96,7 @@ function validateAddress(request, validationCallback) {
             $("#session-id-storage").attr("value", result.sessionId);
         }
 
-        $('#validating-location-loader').hide();
+        // $('#validating-location-loader').hide();
         // $('#validating-location-loader').css('display', 'none');
 
         $('#updating-home-details-loader').hide()
@@ -115,7 +114,7 @@ function validateAddress(request, validationCallback) {
                 $("#address-storage").attr("value", addressDisplayText);
                 $("#invalid-address-page").hide();
                 $("#zip-code-page").show();
-                // $('#validating-location-loader').hide();
+                $('#validating-location-loader').hide();
             } else if ((result.needUnit && !result.unitProvided)) {
                 console.log('We need a unit and it looks like NO unit was provided');
                 let addressDisplayText = result.addressTextModified;
@@ -125,7 +124,7 @@ function validateAddress(request, validationCallback) {
                 $("#zip-code-page").hide();
                 $("#invalid-address-page").hide();
                 $("#condo-unit-page").show();
-                // $('#validating-location-loader').hide();
+                $('#validating-location-loader').hide();
             } else if ((result.needUnit && result.invalidUnit)) {
                 console.log('We need a unit and it looks an invalid one was provided');
                 let addressDisplayText = result.addressTextModified;
@@ -145,19 +144,37 @@ function validateAddress(request, validationCallback) {
                     $("#invalid-address-page").hide();
                     $("#condo-unit-page").hide();
                     $("#confirm-unit-page").show();
-                    // $('#validating-location-loader').hide();
+                    $('#validating-location-loader').hide();
                 }
             } else {
-                console.log('Invalid address...deciding what to do next');
-                $("#zip-code-page").hide();
-                $("#condo-unit-page").hide();
-                $("#invalid-address-page").show();
+                // console.log('Invalid address...deciding what to do next');
+                // $("#zip-code-page").hide();
+                // $("#condo-unit-page").hide();
+                // $("#invalid-address-page").show();
                 // $('#validating-location-loader').hide();
-                let errorMessage = 'We were unable to validate that address';
-                if (result.extraneousUnitProvided) {
-                    errorMessage = 'Did you mean to submit a unit number?';
+                // let errorMessage = 'We were unable to validate that address';
+                // if (result.extraneousUnitProvided) {
+                //     errorMessage = 'Did you mean to submit a unit number?';
+                // }
+                // $(".address-error-message").html(errorMessage);
+                let addressCorrectionAttempted = $("#address-correction-attempted").val();
+                if (addressCorrectionAttempted) {
+                    console.log('Proceeding because already attempted to correct the address');
+                    storeValidatedAddressComponents(result);
+                    // proceedAfterAddressValidated(result.addressTextModified); // or should we do result.submittedAddress?
+                    proceedAfterAddressValidated(result.submittedAddress); // or should we do result.submittedAddress?
+                } else {
+                    console.log('Invalid address...deciding what to do next');
+                    $("#address-correction-attempted").attr("value", "true"); // ADDED 1/4/2022 - SET INDICATOR for whether to keep asking for unit
+                    $("#zip-code-page").hide();
+                    $("#condo-unit-page").hide();
+                    $("#invalid-address-page").show();
+                    let errorMessage = 'We were unable to validate that address';
+                    if (result.extraneousUnitProvided) {
+                        errorMessage = 'Did you mean to submit a unit number?';
+                    }
+                    $(".address-error-message").html(errorMessage);
                 }
-                $(".address-error-message").html(errorMessage);
             }
         } catch (error) {
             console.log(error);
