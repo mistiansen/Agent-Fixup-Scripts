@@ -59,7 +59,7 @@ async function validateCity(city) {
 
 
 async function getValidCityId(cityInput) {
-    console.log('About to validate city' + city);
+    console.log('About to validate city' + cityInput);
     let cityId = "";
     try {
         await $.ajax({
