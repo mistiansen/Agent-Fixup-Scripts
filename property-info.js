@@ -63,8 +63,23 @@ function parsePropertyDescription(result) {
         console.log('Got propertyDescription ' + propertyDescription);
         console.log('Got description text ' + descriptionText);
         console.log('Got features ' + features);
-        $("#property-description-storage").val(descriptionText);
-        $("#property-features-storage").val(features);
+
+        if (descriptionText && descriptionText != "") {
+            $(".home-info-found-header").html("Great! We found some info on your home");
+            $(".home-details-text").html(descriptionText);
+        } else {
+            // $(".home-info-found-header").html("Anything you'd like us to know about your home?");
+            $("#home-details-description").hide();
+            $("#add-details-invitation").hide();
+        }
+        if (features && features != "") {
+            let featuresText = "It features " + features;
+            $(".home-features-text").html(featuresText);
+        } else {
+            $("#home-features-description").hide();
+        }
+        // $("#property-description-storage").val(descriptionText); // not sure the purpose of this
+        // $("#property-features-storage").val(features); // not sure the purpose of this
     } catch (error) {
         // console.log(error);
         console.log('Failed parsePropertyDescription');
