@@ -37,8 +37,8 @@ function proceedAfterAddressValidated(result) {
     console.log('Proceeding after ADDRESS VALIDATION with agentId ' + agentId);
     pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
 
-    $("#seller-form").show();
-    console.log('Should have just shown seller-form');
+    // $("#seller-form").show();
+    // console.log('Should have just shown seller-form');
 
     $("#selling-home-condition-page").show();
     console.log('Should have just shown selling home condition page');
@@ -170,11 +170,22 @@ function submitFinalContacts(contactPageId, phoneInputId, emailInputId) {
     $("#" + contactPageId).hide();
 }
 
+function routeToSuccess() {
+    let cityId = $("#city-id-storage").val();
+    let visitorType = $("#visitor-type-storage").val();
+    let sessionId = $("#session-id-storage").val();
 
+    let toPath = "cities/" + cityId;
+    let queryString = '?visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId); // should be unnecessary
+    if (visitorType == "seller" || "visitorType" == "seller-buyer") {
+        let address = $("#address-storage").val();
+        queryString = queryString + '&address=' + encodeURIComponent(address);
+    }
+    let routeToPathBase = 'https://agentfixup.com/' + toPath;
+    let routeToUrl = routeToPathBase + queryString;
 
-
-
-
+    window.location.replace(routeToUrl); // REPLACES the current page, so the back button will take them to homepage rather than here
+}
 
 function mobileCheck() {
     let isMobile = false;
