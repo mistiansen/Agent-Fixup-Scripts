@@ -55,6 +55,22 @@ function parseValuationResult(result) {
     }
 }
 
+function parsePropertyDescription(result) {
+    try {
+        let propertyDescription = result.propertyDescription;
+        let descriptionText = propertyDescription.description;
+        let features = propertyDescription.features;
+        console.log('Got propertyDescription ' + propertyDescription);
+        console.log('Got description text ' + descriptionText);
+        console.log('Got features ' + features);
+        $("#property-description-storage").val(descriptionText);
+        $("#property-features-storage").val(features);
+    } catch (error) {
+        // console.log(error);
+        console.log('Failed parsePropertyDescription');
+    }
+}
+
 // function pullPropertyInfo(address, street, city, state, zip, agentId, domain) {
 function pullPropertyInfo(address, agentId) {
 
@@ -85,6 +101,7 @@ function pullPropertyInfo(address, agentId) {
         $("#session-id-storage").attr("value", sessionId); // this becomes the sessionId that tracks subsequent changes
         console.log('Pulled this property: ' + property);
         console.log('Pulled this sessionId: ' + sessionId);
+        parsePropertyDescription(result);
         return parseValuationResult(property);
     }).fail(function (err) {
         console.log('Unabled to pull home value estimate');
