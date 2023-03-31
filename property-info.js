@@ -67,6 +67,9 @@ function parsePropertyDescription(result) {
         if (descriptionText && descriptionText != "") {
             $(".home-info-found-header").html("Great! We found some info on your home");
             $(".home-details-text").html(descriptionText);
+            $(".home-details-text").val(descriptionText);
+            // $("$home-details-description").val(descriptionText);
+
         } else {
             // $(".home-info-found-header").html("Anything you'd like us to know about your home?");
             $("#home-details-description").hide();
@@ -75,6 +78,8 @@ function parsePropertyDescription(result) {
         if (features && features != "") {
             let featuresText = "It features " + features;
             $(".home-features-text").html(featuresText);
+            $(".home-features-text").val(featuresText);
+            // $("$home-features-description").val(descriptionText);
         } else {
             $("#home-features-description").hide();
         }
@@ -105,7 +110,6 @@ function pullPropertyInfo(address, agentId) {
 
     console.log('Pulling property info for ' + address);
     let url = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod/property";
-    // let url = "https://1snwvce58a.execute-api.us-east-1.amazonaws.com/dev/property";
     $.ajax({
         url: url,
         method: 'POST',
