@@ -120,7 +120,7 @@ function pullPropertyInfo(address, agentId) {
         $("#session-id-storage").attr("value", sessionId); // this becomes the sessionId that tracks subsequent changes
         console.log('Pulled this property: ' + property);
         console.log('Pulled this sessionId: ' + sessionId);
-        parsePropertyDescription(result);
+        parsePropertyDescription(property);
         return parseValuationResult(property);
     }).fail(function (err) {
         console.log('Unabled to pull home value estimate');
