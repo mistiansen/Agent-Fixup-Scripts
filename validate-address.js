@@ -31,7 +31,6 @@ function storeValidatedAddressComponents(validationResult) {
     $("#address-send").attr("value", addressDisplayText); // for the form submission(s); potentially move down to unit submit section and send "unitAddress"
     $("#address-storage").attr("value", addressDisplayText); // house number, street, and unit (if any)
 
-    // $("#street-storage").attr("value", validationResult.street);
     $("#street-storage").attr("value", validationResult.streetNoUnit); // NOTE 1/4/2023 - WE need without unit, so can add unit on if it needs a corrected unit. "addressLine1" may also work. 
     $("#unit-storage").attr("value", validationResult.unit); // should be included above in street, I think
     $("#unit-type-storage").attr("value", validationResult.unitType); // sub-premises type
@@ -43,9 +42,6 @@ function storeValidatedAddressComponents(validationResult) {
     $("#zip-storage").attr("value", validationResult.zip);
 
     // ADDED 1/29/2023 - USE CITY ID
-    // let cityId = validationResult.cityId;
-    // console.log('Pulled CITY ID from validation result: ' + cityId);
-    // $("#city-id-storage").attr("value", cityId); // store our city-id / slug corresponding to the city collection page
     console.log('SUPPORT CITY CHECK: ' + validationResult.supportedCity);
     console.log('SUPPORTED CITY ID: ' + validationResult.cityId);
     if (validationResult.supportedCity && validationResult.cityId) {
@@ -77,7 +73,6 @@ function correctionAddressValidation(address, agentId, sessionId, validationCall
     validateAddress(request, validationCallback);
 }
 
-// function validateAddress(address, validationCallback, startSession, sessionId) {
 function validateAddress(request, validationCallback) {
     let address = request.address;
     console.log('About to validate address with request: ' + request);
@@ -85,7 +80,6 @@ function validateAddress(request, validationCallback) {
     $.ajax({
         url: url,
         method: 'POST',
-        // data: JSON.stringify({ "address": address, "validateCity": true }),
         data: JSON.stringify(request), // data: JSON.stringify(sellingDetails),
     }).done(function (result) {
         console.log('Validation result ' + result);
@@ -96,20 +90,19 @@ function validateAddress(request, validationCallback) {
             $("#session-id-storage").attr("value", result.sessionId);
         }
 
+        // TODO - MAYBE put these directly in the validationCallback if they're needed. We shouldn't rely on / expect their existence in all cases. 
         // $('#validating-location-loader').hide();
         // $('#validating-location-loader').css('display', 'none');
 
         // $('#updating-home-details-loader').hide()
         // $('#updating-home-details-loader').css('display', 'flex');
         // $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
+
         try {
             storeValidatedAddressComponents(result); // NEW 1/4/2022 - this would ALWAYS run, so elements SHOULD be safely overridden
             if (!result.invalidAddress) {
                 console.log('Looks like it was a valid address');
                 postValidation(function () { validationCallback(result) });
-                // storeValidatedAddressComponents(result);
-                // proceedAfterAddressValidated(result.submittedAddress); // or should we do result.submittedAddress?                
-                // proceedAfterAddressValidated(result.addressTextModified); // or should we do result.submittedAddress?
             } else if (result.invalidZip) {
                 console.log('Looks like an invalid zip or no zip provided');
                 let addressDisplayText = address;
@@ -136,7 +129,6 @@ function validateAddress(request, validationCallback) {
                 let unitCorrectionAttempted = $("#unit-correction-attempted").val();
                 if (unitCorrectionAttempted) {
                     console.log('Proceeding because already attempted to correct the unit');
-                    // storeValidatedAddressComponents(result);
                     postValidation(function () { validationCallback(result) });
                 } else {
                     console.log('Have not yet attempted to correct the unit; doing so now');
@@ -150,22 +142,21 @@ function validateAddress(request, validationCallback) {
                     $('#validating-location-loader').hide();
                 }
             } else {
-                // console.log('Invalid address...deciding what to do next');
-                // $("#zip-code-page").hide();
-                // $("#condo-unit-page").hide();
-                // $("#invalid-address-page").show();
-                // $('#validating-location-loader').hide();
-                // let errorMessage = 'We were unable to validate that address';
-                // if (result.extraneousUnitProvided) {
-                //     errorMessage = 'Did you mean to submit a unit number?';
+                // TODO - NEED some more attention here...
+                // // should we check for unit again even if already attempted before? probably
+                // // more importantly should we first make sure there is a valid cityId to route to?
+
+                // let failureCityId = validationResult.cityId; // do we also need to check the "closestCityId" in the response?
+                // if (!failureCityId || failureCityId == "null" || failureCityId == "") {
+                //     $("#seller-invalid-city-page").show();
+                //     $("#zip-code-page").hide();
+                //     $("#condo-unit-page").hide();
+                //     $("#invalid-address-page").hide();
                 // }
-                // $(".address-error-message").html(errorMessage);
                 let addressCorrectionAttempted = $("#address-correction-attempted").val();
                 if (addressCorrectionAttempted) {
                     console.log('Proceeding because already attempted to correct the address');
-                    storeValidatedAddressComponents(result);
-                    // proceedAfterAddressValidated(result.addressTextModified); // or should we do result.submittedAddress?
-                    proceedAfterAddressValidated(result.submittedAddress); // or should we do result.submittedAddress?
+                    postValidation(function () { validationCallback(result) });
                 } else {
                     console.log('Invalid address...deciding what to do next');
                     $("#address-correction-attempted").attr("value", "true"); // ADDED 1/4/2022 - SET INDICATOR for whether to keep asking for unit
