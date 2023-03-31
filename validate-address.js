@@ -99,14 +99,17 @@ function validateAddress(request, validationCallback) {
         // $('#validating-location-loader').hide();
         // $('#validating-location-loader').css('display', 'none');
 
-        $('#updating-home-details-loader').hide()
+        // $('#updating-home-details-loader').hide()
         // $('#updating-home-details-loader').css('display', 'flex');
-        $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
+        // $('#market-analysis-loader').hide(); // maybe rename to "address-loader"
         try {
             storeValidatedAddressComponents(result); // NEW 1/4/2022 - this would ALWAYS run, so elements SHOULD be safely overridden
             if (!result.invalidAddress) {
                 console.log('Looks like it was a valid address');
                 postValidation(function () { validationCallback(result) });
+                // storeValidatedAddressComponents(result);
+                // proceedAfterAddressValidated(result.submittedAddress); // or should we do result.submittedAddress?                
+                // proceedAfterAddressValidated(result.addressTextModified); // or should we do result.submittedAddress?
             } else if (result.invalidZip) {
                 console.log('Looks like an invalid zip or no zip provided');
                 let addressDisplayText = address;
