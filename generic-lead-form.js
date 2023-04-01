@@ -29,17 +29,24 @@ function setBuyerSessionId() {
     return sessionId;
 }
 
-function proceedAfterAddressValidated(result) {
+async function proceedAfterAddressValidated(result) {
     console.log('In proceedAfterAddressValidated...');
     let address = result.addressTextModified;
+    console.log('Using this address from the validation response: ' + address);
+
     // REQUEST PROPERTY INFO FROM BACKEND
     let agentId = $("#agent-id-storage").val();
     console.log('Proceeding after ADDRESS VALIDATION with agentId ' + agentId);
     pullPropertyInfo(address, agentId); // alternatively, we could do this in the address valdation endpoint
 
     // $("#seller-form").show();
+    $('#validating-address-loader').removeClass('hide');
+    $('#validating-address-loader').css('display', 'flex');
     // console.log('Should have just shown seller-form');
-
+    await delay(2000); // slight delay to let user breathe and pull property info?
+    $("#seller-form").show();
+    $('#validating-address-loader').hide();
+    $('#validating-city-loader').hide();
     $("#selling-home-condition-page").show();
     console.log('Should have just shown selling home condition page');
 
@@ -111,7 +118,7 @@ function getBuyerSessionInfo() {
 
 function updateSession(sessionFields) {
     let backendPath = "https://hhvjdbhqp4.execute-api.us-east-1.amazonaws.com/prod";
-    console.log('Right before updateSession()');
+    console.log('Right before updateSession, with this payload: ' + sessionFields);
     let request = $.ajax({
         url: backendPath + "/session",
         method: "POST",
