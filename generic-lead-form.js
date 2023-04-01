@@ -43,7 +43,7 @@ async function proceedAfterAddressValidated(result) {
     $('#validating-address-loader').removeClass('hide');
     $('#validating-address-loader').css('display', 'flex');
     // console.log('Should have just shown seller-form');
-    await delay(2000); // slight delay to let user breathe and pull property info?
+    await delay(1500); // slight delay to let user breathe and pull property info?
     $("#seller-form").show();
     $('#validating-address-loader').hide();
     $('#validating-city-loader').hide();
