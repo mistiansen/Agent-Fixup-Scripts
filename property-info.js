@@ -76,7 +76,7 @@ function parsePropertyDescription(result) {
             $("#add-details-invitation").hide();
         }
         if (features && features != "") {
-            let featuresText = "It features a" + features.toLowerCase();
+            let featuresText = "It features a " + features.toLowerCase();
             $(".home-features-text").html(featuresText);
             $(".home-features-text").val(featuresText);
             // $("$home-features-description").val(descriptionText);
