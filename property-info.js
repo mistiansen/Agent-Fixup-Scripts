@@ -65,7 +65,7 @@ function parsePropertyDescription(result) {
         console.log('Got features ' + features);
 
         if (descriptionText && descriptionText != "") {
-            $(".home-info-found-header").html("Great! We found some info on your home");
+            $(".home-info-found-header").html("We found some info on your home!");
             $(".home-details-text").html(descriptionText);
             $(".home-details-text").val(descriptionText);
             // $("$home-details-description").val(descriptionText);
