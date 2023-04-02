@@ -229,45 +229,45 @@ function handleBounce() {
 }
 
 
-// ADDRESS CORRECTION ELEMENTS
-async function rerouteAfterValidation(result) {
-    console.log('Calling rerouteAfterValidation()...');
-    let sessionId = $("#session-id-storage").val();
-    let visitorType = $("#visitor-type-storage").val();
-    let destination = $("#destination-storage").val(); // agentId
-    let address = $("#address-storage").val(); // house number, street, and unit (if any)
-    let gclid = $("#gclid-storage").val();
+// // ADDRESS CORRECTION ELEMENTS
+// async function rerouteAfterValidation(result) {
+//     console.log('Calling rerouteAfterValidation()...');
+//     let sessionId = $("#session-id-storage").val();
+//     let visitorType = $("#visitor-type-storage").val();
+//     let destination = $("#destination-storage").val(); // agentId
+//     let address = $("#address-storage").val(); // house number, street, and unit (if any)
+//     let gclid = $("#gclid-storage").val();
 
-    // let cityId = $("#city-id-storage").val();
-    let cityId = result.cityId;
+//     // let cityId = $("#city-id-storage").val();
+//     let cityId = result.cityId;
 
-    let toPath;
-    let isSupportedCity = result.supportedCity;
-    console.log('IS SUPPORTED CITY? ' + isSupportedCity);
-    if (typeof isSupportedCity == "undefined" || !isSupportedCity) {
-        let closestCityInfo = result.closestSupportedCity;
-        let closestCityId = closestCityInfo.closestCityId;
-        if (typeof closestCityId != "undefined") {
-            console.log('Got a closest city from BACKEND' + closestCityId);
-            cityId = closestCityId;
-        } else {
-            cityId = "locate";
-        }
-    }
-    reroute(cityId, address, visitorType, destination, sessionId, gclid);
-}
+//     let toPath;
+//     let isSupportedCity = result.supportedCity;
+//     console.log('IS SUPPORTED CITY? ' + isSupportedCity);
+//     if (typeof isSupportedCity == "undefined" || !isSupportedCity) {
+//         let closestCityInfo = result.closestSupportedCity;
+//         let closestCityId = closestCityInfo.closestCityId;
+//         if (typeof closestCityId != "undefined") {
+//             console.log('Got a closest city from BACKEND' + closestCityId);
+//             cityId = closestCityId;
+//         } else {
+//             cityId = "locate";
+//         }
+//     }
+//     reroute(cityId, address, visitorType, destination, sessionId, gclid);
+// }
 
-function reroute(cityId, address, visitorType, destination, sessionId, gclid) {
-    let toPath = "cities/" + cityId;
-    let queryString = '?address=' + encodeURIComponent(address) + '&validated=true' + '&destination=' + encodeURIComponent(destination) + '&visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId);
-    queryString = queryString + '&gclid=' + gclid
-    let routeToPathBase = 'https://agentfixup.com/' + toPath;
-    let routeToUrl = routeToPathBase + queryString;
+// function reroute(cityId, address, visitorType, destination, sessionId, gclid) {
+//     let toPath = "cities/" + cityId;
+//     let queryString = '?address=' + encodeURIComponent(address) + '&validated=true' + '&destination=' + encodeURIComponent(destination) + '&visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId);
+//     queryString = queryString + '&gclid=' + gclid
+//     let routeToPathBase = 'https://agentfixup.com/' + toPath;
+//     let routeToUrl = routeToPathBase + queryString;
 
-    let now = new Date();
-    console.log('REROUTE start @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
-    window.location.replace(routeToUrl); // REPLACES the current page, so the back button will take them to homepage rather than here
-}
+//     let now = new Date();
+//     console.log('REROUTE start @' + now.getSeconds() + "." + now.getMilliseconds() + "\n\n");
+//     window.location.replace(routeToUrl); // REPLACES the current page, so the back button will take them to homepage rather than here
+// }
 
 document.getElementById("no-unit-btn").addEventListener('click', (event) => {
     console.log('Progressing without re-validating the no-unit address');
@@ -280,13 +280,8 @@ document.getElementById("no-unit-btn").addEventListener('click', (event) => {
     $('#validating-address-loader').css('display', 'flex');
 
     // PULL COMPONTENTS FROM STORAGE AND REROUTE REGARDLESS (at this point we should always have a cityId, at least of the closest city)
-    let cityId = $("#city-id-storage").val();
     let address = $("#address-storage").val();
-    let visitorType = $("#visitor-type-storage").val();
-    let destination = $("#destination-storage").val(); // agentId
-    let sessionId = $("#session-id-storage").val(); // agentId
-    let gclid = $("#gclid-storage").val(); // agentId
-    reroute(cityId, address, visitorType, destination, sessionId, gclid);
+    continueToForm(address);
 });
 
 document.getElementById("unit-submit-btn").addEventListener('click', (event) => {
@@ -315,7 +310,6 @@ document.getElementById("unit-submit-btn").addEventListener('click', (event) => 
     let sessionId = $("#session-id-storage").val();
 
     // VALIDATE ADDRESS
-    // correctionAddressValidation(unitAddress, agentId, sessionId, rerouteAfterValidation);
     correctionAddressValidation(unitAddress, agentId, sessionId, proceedAfterAddressValidated);
 });
 
