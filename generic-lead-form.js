@@ -380,6 +380,7 @@ document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
     let sessionId = $("#session-id-storage").val();
 
     // VALIDATE ADDRESS
+    console.log('Trying zip submit address validation with agentId ' + agentId);
     correctionAddressValidation(zipCodeAddress, agentId, sessionId, proceedAfterAddressValidated);
     setTimeout(function () { $("#validating-address-loader").hide(); }, 2500);
 });
