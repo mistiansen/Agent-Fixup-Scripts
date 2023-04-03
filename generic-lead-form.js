@@ -182,16 +182,38 @@ function submitFinalContacts(contactPageId, phoneInputId, emailInputId) {
 }
 
 function routeToSuccess() {
-    let cityId = $("#city-id-storage").val();
+    /* if it comes from an ad, go to the success slug page; otherwise, go to the city page */
     let visitorType = $("#visitor-type-storage").val();
-    let sessionId = $("#session-id-storage").val();
+    // let sessionId = $("#session-id-storage").val();
+    let city = $("#city-storage").val();
+    let state = $("#state-storage").val();
+    let cityId = $("#city-id-storage").val();
 
-    let toPath = "cities/" + cityId;
-    let queryString = '?visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId); // should be unnecessary
+    // let queryString = '?visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId); // should be unnecessary
+    let queryString = '?visitor=' + encodeURIComponent(visitorType); // should be unnecessary
+    queryString = '&city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state) + '&cityId=' + encodeURIComponent(cityId); // should be unnecessary
+    console.log('Generated queryString in routeToSuccess: ' + queryString);
     if (visitorType == "seller" || "visitorType" == "seller-buyer") {
         let address = $("#address-storage").val();
-        queryString = queryString + '&address=' + encodeURIComponent(address);
+        let valueEstimate = $("#value-estimate-storage").val();
+        let estimatedSavings = $("#estimated-savings-storage").val();
+        queryString = queryString + '&address=' + encodeURIComponent(address) + '&value=' + encodeURIComponent(valueEstimate) + '&savings=' + encodeURIComponent(estimatedSavings);
+    } else {
+        let entered = $("#entered-storage").val();
+        queryString = queryString + '&entered=' + encodeURIComponent(entered);
     }
+
+    // THE path is dictated by the agent success slug if this visitor comes from an ad
+    let toPath;
+    let successSlug = $("#slug-storage").val();
+    console.log('Pulled successSlug in routeToSuccess: ' + successSlug);
+    if (successSlug && successSlug != "" && successSlug != null) {
+        toPath = "top-agent-match/" + successSlug;
+    } else {
+        // let cityId = $("#city-id-storage").val();
+        toPath = "cities/" + cityId;
+    }
+
     let routeToPathBase = 'https://agentfixup.com/' + toPath;
     let routeToUrl = routeToPathBase + queryString;
 
@@ -376,7 +398,7 @@ document.getElementById("zip-submit-btn").addEventListener('click', (event) => {
     $('#validating-address-loader').removeClass('hide');
     $('#validating-address-loader').css('display', 'flex');
 
-    let agentId = $("#destination-storage").val();
+    let agentId = $("#destination-storage").val(); // is this hitting a race condition? because it's not getting a value. i doubt it though; setting this is one of first things that should be done
     let sessionId = $("#session-id-storage").val();
 
     // VALIDATE ADDRESS
