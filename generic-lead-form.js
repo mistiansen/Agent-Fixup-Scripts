@@ -190,8 +190,7 @@ function routeToSuccess() {
     let cityId = $("#city-id-storage").val();
 
     // let queryString = '?visitor=' + encodeURIComponent(visitorType) + '&session=' + encodeURIComponent(sessionId); // should be unnecessary
-    let queryString = '?visitor=' + encodeURIComponent(visitorType); // should be unnecessary
-    queryString = '&city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state) + '&cityId=' + encodeURIComponent(cityId); // should be unnecessary
+    let queryString = '?visitor=' + encodeURIComponent(visitorType) + '&city=' + encodeURIComponent(city) + '&state=' + encodeURIComponent(state) + '&cityId=' + encodeURIComponent(cityId); // should be unnecessary
     console.log('Generated queryString in routeToSuccess: ' + queryString);
     if (visitorType == "seller" || "visitorType" == "seller-buyer") {
         let address = $("#address-storage").val();
