@@ -70,6 +70,7 @@ function initialAddressValidation(address, agentId, validationCallback) {
 
 function correctionAddressValidation(address, agentId, sessionId, validationCallback) {
     let request = { "address": address, "validateCity": true, "agentId": agentId, "sessionId": sessionId };
+    console.log('Sending off this correction address validation request: ' + request);
     validateAddress(request, validationCallback);
 }
 
@@ -111,6 +112,7 @@ function validateAddress(request, validationCallback) {
                 $("#invalid-address-page").hide();
                 $("#zip-code-page").show();
                 $('#validating-location-loader').hide();
+                $('#validating-address-loader').hide();
             } else if ((result.needUnit && !result.unitProvided)) {
                 console.log('We need a unit and it looks like NO unit was provided');
                 let addressDisplayText = result.addressTextModified;
@@ -121,6 +123,7 @@ function validateAddress(request, validationCallback) {
                 $("#invalid-address-page").hide();
                 $("#condo-unit-page").show();
                 $('#validating-location-loader').hide();
+                $('#validating-address-loader').hide();
             } else if ((result.needUnit && result.invalidUnit)) {
                 console.log('We need a unit and it looks an invalid one was provided');
                 let addressDisplayText = result.addressTextModified;
@@ -140,6 +143,7 @@ function validateAddress(request, validationCallback) {
                     $("#condo-unit-page").hide();
                     $("#confirm-unit-page").show();
                     $('#validating-location-loader').hide();
+                    $('#validating-address-loader').hide();
                 }
             } else {
                 // TODO - NEED some more attention here...
