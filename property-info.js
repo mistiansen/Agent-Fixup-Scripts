@@ -27,6 +27,10 @@ function parseValuationResult(result) {
             $(".estimated-savings").val(estimatedSavings);
             console.log('Got estimated savings: ' + estimatedSavings);
 
+            // NEW - added 4/3/2023 - store the value estimate and savings estimate
+            // $("#value-estimate-storage").val(adjustedEstimate);
+            // $("#estimated-savings-storage").val(estimatedSavings);
+
             $(".selling-estimate").html(adjustedEstimate);
             $(".selling-estimate").val(adjustedEstimate);
             $(".value-estimate").html(estimatedValue);
@@ -92,13 +96,17 @@ function parsePropertyDescription(result) {
 }
 
 // function pullPropertyInfo(address, street, city, state, zip, agentId, domain) {
-function pullPropertyInfo(address, agentId) {
+// function pullPropertyInfo(address, agentId) {
+function pullPropertyInfo(address, agentId, site) {
+    if (!site || site == "") {
+        site = "agentfixup.com"
+    }
 
     /* Currently, each pullPropertyInfo request returns a new sessionId */
     let propertyRequest = {
         "address": address,
         "agentId": agentId,
-        "site": "agentfixup.com"
+        "site": site,
     };
 
     // ADDED 8/22/22 - Use existing sessionId if it exists
